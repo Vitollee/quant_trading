@@ -1,0 +1,228 @@
+# ============================================================
+# 量化交易系统配置文件
+# 作者: 虾虾 🦐
+# 说明: 港股 + 美股 模拟交易系统
+# ============================================================
+
+# ---------------------- 基础设置 ----------------------
+system:
+  name: "Quant Trading System"
+  version: "1.0.0"
+  log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+
+# ---------------------- 资金管理 ----------------------
+capital:
+  initial: 100000  # 初始资金 10万港币
+  currency: "HKD"   # 港币
+
+# ---------------------- 市场配置 ----------------------
+markets:
+  # 港股市场
+  hk:
+    enabled: true
+    watchlist:    # 自选股列表
+      - "00700.HK"   # 腾讯
+      - "09988.HK"   # 阿里巴巴
+      - "03690.HK"   # 美团
+      - "02318.HK"   # 中国平安
+      - "00939.HK"   # 建设银行
+      - "00001.HK"   # 长江实业
+    # 筛选条件
+    filters:
+      min_market_cap: 50000000000   # 最小市值 500亿
+      min_daily_volume: 10000000     # 最小日成交 1000万
+
+  # 美股市场
+  us:
+    enabled: true
+    watchlist:    # 自选股列表
+      - "AAPL"      # Apple
+      - "MSFT"      # Microsoft
+      - "GOOGL"     # Google
+      - "AMZN"      # Amazon
+      - "NVDA"      # NVIDIA
+      - "TSLA"      # Tesla
+      - "META"      # Meta
+      - "AMD"       # AMD
+    # 筛选条件
+    filters:
+      min_market_cap: 100000000000  # 最小市值 1000亿
+      min_daily_volume: 5000000      # 最小日成交 500万
+
+# ---------------------- 长周期策略配置 ----------------------
+strategy_long_term:
+  enabled: true
+  name: "价值动量策略"
+  description: "基于估值、成长、质量、动量的长周期策略"
+
+  # 调仓周期
+  rebalance:
+    frequency: "monthly"  # weekly, monthly
+    day_of_week: 1        # 周几调仓 (0=周一)
+    day_of_month: 1       # 每月几号
+
+  # 因子权重 (总分=1.0)
+  factors:
+    # 估值因子 (低PE、低PB)
+    valuation:
+      weight: 0.25
+      max_pe: 20           # 最大PE
+      max_pb: 3            # 最大PB
+
+    # 成长因子 (营收、利润增长)
+    growth:
+      weight: 0.30
+      min_revenue_growth: 10   # 最小营收增长%
+      min_profit_growth: 5     # 最小利润增长%
+
+    # 质量因子 (ROE、毛利率)
+    quality:
+      weight: 0.25
+      min_roe: 10           # 最小ROE%
+      min_gross_margin: 25    # 最小毛利率%
+
+    # 动量因子 (近期涨幅)
+    momentum:
+      weight: 0.20
+      lookback_days: 90      # 看过去多少天
+      top_percentile: 50     # 取前50%
+
+  # 持仓配置
+  position:
+    max_stocks: 15           # 最多持有多少只
+    max_single: 0.10         # 单票最大仓位 10%
+
+  # 风控
+  risk:
+    stop_loss: -0.08          # 止损 -8%
+    take_profit: 0.25       # 止盈 25%
+    max_position_loss: -0.05 # 单日最大亏损 -5%
+
+# ---------------------- 日内交易策略配置 ----------------------
+strategy_intraday:
+  enabled: true
+  name: "日内突破策略"
+  description: "基于RSI、MACD、布林带的日内交易策略"
+
+  # 交易时间 (港股9:30-16:00, 美股9:30-16:00)
+  trading_hours:
+    hk:
+      start: "09:30"
+      end: "16:00"
+    us:
+      start: "09:30"
+      end: "16:00"
+    force_close_time: "15:55"  # 收盘前5分钟强制平仓
+
+  # 技术指标参数
+  indicators:
+    # RSI指标
+    rsi:
+      period: 14
+      oversold: 35   # 超卖阈值 (买)
+      overbought: 65  # 超买阈值 (卖)
+
+    # MACD指标
+    macd:
+      fast: 12
+      slow: 26
+      signal: 9
+
+    # 布林带
+    bollinger:
+      period: 20
+      std: 2          # 标准差倍数
+
+    # 成交量
+    volume:
+      min_multiplier: 2.0  # 最小成交量倍数
+
+  # 买入信号 (满足≥2个)
+  buy_signals:
+    - "rsi_oversold"      # RSI超卖
+    - "bb_lower_touch"    # 触及布林下轨
+    - "macd_golden_cross" # MACD金叉
+    - "volume_surge"      # 成交量放大
+    - "break_high"        # 突破日内高点
+
+  # 卖出信号
+  sell_signals:
+    - "rsi_overbought"    # RSI超买
+    - "bb_upper_touch"    # 触及布林上轨
+    - "macd_dead_cross"   # MACD死叉
+    - "stop_loss"          # 止损
+    - "time_exit"         # 时间出场(收盘)
+
+  # 持仓配置
+  position:
+    max_stocks: 5           # 最多同时持有多少只
+    max_single: 0.20        # 单票最大仓位 20%
+
+  # 风控
+  risk:
+    stop_loss: -0.03          # 止损 -3%
+    take_profit: 0.05       # 止盈 5%
+    max_position_loss: -0.03 # 单日最大亏损 -3%
+    max_consecutive_loss: 5  # 连续亏损5笔暂停
+
+# ---------------------- 数据源配置 ----------------------
+data_sources:
+  # 行情数据
+  quotes:
+    # 港股
+    hk:
+      provider: "yfinance"  # yfinance, akshare
+      symbols_suffix: ".HK"  # 股票代码后缀
+
+    # 美股
+    us:
+      provider: "yfinance"
+      symbols_suffix: ""     # 美股不需要后缀
+
+  # 新闻数据
+  news:
+    enabled: true
+    sources:
+      - "yahoo"    # Yahoo Finance
+      - "bbc"     # BBC News
+    keywords:       # 关注关键词
+      hk:
+        - "Hong Kong stock"
+        - "HSI"
+        - "港股"
+      us:
+        - "stock market"
+        - "Federal Reserve"
+        - "S&P 500"
+
+# ---------------------- 模拟交易配置 ----------------------
+simulation:
+  enabled: true
+  mode: "paper"  # paper=模拟, live=实盘
+
+  # 滑点 (模拟成交价与报价的偏差)
+  slippage:
+    hk: 0.001     # 港股 0.1%
+    us: 0.0005    # 美股 0.05%
+
+  # 手续费 (近似值)
+  commission:
+    hk: 0.0003    # 港股万3
+    us: 0.001      # 美股千1
+
+# ---------------------- 告警配置 ----------------------
+alerts:
+  enabled: true
+  channels:
+    - "whatsapp"   # 发送到WhatsApp
+
+  # 告警条件
+  triggers:
+    - "daily_loss_exceed"   # 单日亏损超限
+    - "position_opened"     # 开仓
+    - "position_closed"     # 平仓
+    - "signal_generated"    # 产生信号
+
+# ============================================================
+# 配置文件说明结束
+# ============================================================

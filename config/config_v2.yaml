@@ -1,0 +1,73 @@
+# ============================================================
+# 量化交易系统配置 V2
+# 结合 Vnstock + Screeni-py 设计思路
+# ============================================================
+
+# ---------------------- 市场配置 ----------------------
+markets:
+  # 港股自选
+  hk:
+    - "00700"   # 腾讯
+    - "09988"   # 阿里巴巴
+    - "03690"   # 美团
+    - "02318"   # 中国平安
+    - "00939"   # 建设银行
+    - "00001"   # 长江实业
+
+  # 美股自选
+  us:
+    - "AAPL"    # Apple
+    - "MSFT"    # Microsoft
+    - "GOOGL"   # Google
+    - "AMZN"    # Amazon
+    - "NVDA"    # NVIDIA
+    - "TSLA"    # Tesla
+    - "META"    # Meta
+    - "AMD"     # AMD
+
+# ---------------------- 筛选条件 ----------------------
+# 技术指标参数
+indicators:
+  rsi:
+    period: 14
+    oversold: 30    # 超卖
+    overbought: 70   # 超买
+
+  macd:
+    fast: 12
+    slow: 26
+    signal: 9
+
+  bollinger:
+    period: 20
+    std: 2
+
+# 筛选条件
+filters:
+  rsi_min: 0        # 最小RSI
+  rsi_max: 80        # 最大RSI
+  volume_ratio: 1.5  # 成交量倍数
+  min_score: 3        # 最小得分
+
+# ---------------------- 资金管理 ----------------------
+capital:
+  initial: 100000  # 10万港币
+  currency: "HKD"
+
+# 长周期策略
+long_term:
+  enabled: true
+  max_positions: 15
+  position_size: 0.10   # 10%仓位
+
+# 日内策略
+intraday:
+  enabled: true
+  max_positions: 5
+  position_size: 0.20   # 20%仓位
+
+# 风控
+risk:
+  stop_loss: -0.08      # 止损 8%
+  take_profit: 0.25     # 止盈 25%
+  max_daily_loss: -0.05  # 单日最大亏损
