@@ -252,16 +252,19 @@ class PatternRecognition:
         """早晨之星 - 底部反转"""
         if len(df) < 3:
             return False
-
-        c1, c2, c3 = df["Close"].iloc[-3:]
-        o1 = df["Open"].iloc[-3]
-
-        # 第一天大跌
-        if c1 < o1:
-            # 第二天盘整
-            # 第三天大涨
-            if c3 > (o1 + c1) / 2:
-                return True
+        try:
+            closes = df["Close"].iloc[-3:].values
+            if len(closes) < 3:
+                return False
+            c1, c2, c3 = closes
+            o1 = df["Open"].iloc[-3]
+            # 第一天大跌
+            if c1 < o1:
+                # 第三天大涨
+                if c3 > (o1 + c1) / 2:
+                    return True
+        except:
+            pass
         return False
 
     @staticmethod
@@ -269,16 +272,17 @@ class PatternRecognition:
         """黄昏之星 - 顶部反转"""
         if len(df) < 3:
             return False
-
-        c1, c2, c3 = df["Close"].iloc[-3:]
-        o1 = df["Open"].iloc[-3]
-
-        # 第一天大涨
-        if c1 > o1:
-            # 第二天盘整
-            # 第三天大跌
-            if c3 < (o1 + c1) / 2:
-                return True
+        try:
+            closes = df["Close"].iloc[-3:].values
+            if len(closes) < 3:
+                return False
+            c1, c2, c3 = closes
+            o1 = df["Open"].iloc[-3]
+            if c1 > o1:
+                if c3 < (o1 + c1) / 2:
+                    return True
+        except:
+            pass
         return False
 
     @staticmethod
@@ -286,9 +290,9 @@ class PatternRecognition:
         """看涨吞没"""
         if len(df) < 2:
             return False
-
-        prev = df.iloc[-2]
-        curr = df.iloc[-1]
+        try:
+            prev = df.iloc[-2]
+            curr = df.iloc[-1]
 
         # 前一天阴线，当天阳线
         if prev["Close"] < prev["Open"] and curr["Close"] > curr["Open"]:
@@ -302,14 +306,14 @@ class PatternRecognition:
         """看跌吞没"""
         if len(df) < 2:
             return False
-
-        prev = df.iloc[-2]
-        curr = df.iloc[-1]
-
-        # 前一天阳线，当天阴线
-        if prev["Close"] > prev["Open"] and curr["Close"] < curr["Open"]:
-            if curr["Open"] > prev["Close"] and curr["Close"] < prev["Open"]:
-                return True
+        try:
+            prev = df.iloc[-2]
+            curr = df.iloc[-1]
+            if prev["Close"] > prev["Open"] and curr["Close"] < curr["Open"]:
+                if curr["Open"] > prev["Close"] and curr["Close"] < prev["Open"]:
+                    return True
+        except:
+            pass
         return False
 
     @staticmethod
@@ -317,15 +321,15 @@ class PatternRecognition:
         """锤子线 - 底部信号"""
         if len(df) < 1:
             return False
-
-        candle = df.iloc[-1]
-        body = abs(candle["Close"] - candle["Open"])
-        lower_shadow = min(candle["Open"], candle["Close"]) - candle["Low"]
-        upper_shadow = candle["High"] - max(candle["Open"], candle["Close"])
-
-        # 下影线是实体2倍以上
-        if lower_shadow > body * 2 and upper_shadow < body:
-            return True
+        try:
+            candle = df.iloc[-1]
+            body = abs(candle["Close"] - candle["Open"])
+            lower_shadow = min(candle["Open"], candle["Close"]) - candle["Low"]
+            upper_shadow = candle["High"] - max(candle["Open"], candle["Close"])
+            if lower_shadow > body * 2 and upper_shadow < body:
+                return True
+        except:
+            pass
         return False
 
     @staticmethod
@@ -333,20 +337,24 @@ class PatternRecognition:
         """突破20日高点"""
         if len(df) < 20:
             return False
-
-        current = df["Close"].iloc[-1]
-        high_20 = df["High"].tail(20).max()
-        return current > high_20
+        try:
+            current = df["Close"].iloc[-1]
+            high_20 = df["High"].tail(20).max()
+            return current > high_20
+        except:
+            return False
 
     @staticmethod
     def _breakout_low(df: pd.DataFrame) -> bool:
         """跌破20日低点"""
         if len(df) < 20:
             return False
-
-        current = df["Close"].iloc[-1]
-        low_20 = df["Low"].tail(20).min()
-        return current < low_20
+        try:
+            current = df["Close"].iloc[-1]
+            low_20 = df["Low"].tail(20).min()
+            return current < low_20
+        except:
+            return False
 
 
 class StockScreener:
