@@ -293,12 +293,13 @@ class PatternRecognition:
         try:
             prev = df.iloc[-2]
             curr = df.iloc[-1]
-
-        # 前一天阴线，当天阳线
-        if prev["Close"] < prev["Open"] and curr["Close"] > curr["Open"]:
-            # 阳线包住阴线
-            if curr["Close"] > prev["Open"] and curr["Open"] < prev["Close"]:
-                return True
+            # 前一天阴线，当天阳线
+            if prev["Close"] < prev["Open"] and curr["Close"] > curr["Open"]:
+                # 阳线包住阴线
+                if curr["Close"] > prev["Open"] and curr["Open"] < prev["Close"]:
+                    return True
+        except:
+            pass
         return False
 
     @staticmethod
