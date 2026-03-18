@@ -167,6 +167,14 @@ strategy_intraday:
 
 # ---------------------- 数据源配置 ----------------------
 data_sources:
+  # 富途 OpenAPI
+  futu:
+    enabled: true
+    host: "127.0.0.1"
+    port: 11111
+    conn_key: "your_conn_key_here"
+    env: 1  # 1=模拟 0=实盘
+    
   # 行情数据
   quotes:
     alpha_vantage:
