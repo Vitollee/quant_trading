@@ -29,22 +29,27 @@ class LongTermStrategy:
             config: 策略配置字典
         """
         self.config = config
-        self.fetcher = DataFetcher()
+        # 从配置获取 API Key
+        av_key = config.get("data_sources", {}).get("quotes", {}).get("alpha_vantage", {}).get("api_key", "")
+        self.fetcher = DataFetcher(av_key)
 
+        # 获取策略配置
+        strategy_config = config.get("strategy_long_term", config)
+        
         # 提取因子权重
-        self.factors = config.get("factors", {})
+        self.factors = strategy_config.get("factors", {})
         self.valuation_weight = self.factors.get("valuation", {}).get("weight", 0.25)
         self.growth_weight = self.factors.get("growth", {}).get("weight", 0.30)
         self.quality_weight = self.factors.get("quality", {}).get("weight", 0.25)
         self.momentum_weight = self.factors.get("momentum", {}).get("weight", 0.20)
 
         # 持仓配置
-        self.position_config = config.get("position", {})
+        self.position_config = strategy_config.get("position", {})
         self.max_stocks = self.position_config.get("max_stocks", 15)
         self.max_single = self.position_config.get("max_single", 0.10)
 
         # 风控配置
-        self.risk_config = config.get("risk", {})
+        self.risk_config = strategy_config.get("risk", {})
         self.stop_loss = self.risk_config.get("stop_loss", -0.08)
         self.take_profit = self.risk_config.get("take_profit", 0.25)
 
@@ -177,6 +182,10 @@ class LongTermStrategy:
         PE >50: 20分
         """
         pe = financials.get("pe_ratio", 0)
+        try:
+            pe = float(pe) if pe else 0
+        except:
+            pe = 0
         if not pe or pe <= 0:
             return 50  # 无数据给中间分
 

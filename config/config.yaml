@@ -173,8 +173,6 @@ data_sources:
       api_key: "168S7Z8WRRUG3GIQ"
     yahoo:
       enabled: true
-  # 行情数据
-  quotes:
     # 港股
     hk:
       provider: "yfinance"  # yfinance, akshare

@@ -29,10 +29,15 @@ class IntradayStrategy:
             config: 策略配置字典
         """
         self.config = config
-        self.fetcher = DataFetcher()
+        # 从配置获取 API Key
+        av_key = config.get("data_sources", {}).get("quotes", {}).get("alpha_vantage", {}).get("api_key", "")
+        self.fetcher = DataFetcher(av_key)
 
+        # 获取策略配置
+        strategy_config = config.get("strategy_intraday", config)
+        
         # 技术指标参数
-        indicators = config.get("indicators", {})
+        indicators = strategy_config.get("indicators", {})
 
         # RSI参数
         rsi_config = indicators.get("rsj", {})
@@ -52,12 +57,12 @@ class IntradayStrategy:
         self.bb_std = bb_config.get("std", 2)
 
         # 持仓配置
-        position_config = config.get("position", {})
+        position_config = strategy_config.get("position", {})
         self.max_stocks = position_config.get("max_stocks", 5)
         self.max_single = position_config.get("max_single", 0.20)
 
         # 风控
-        risk_config = config.get("risk", {})
+        risk_config = strategy_config.get("risk", {})
         self.stop_loss = risk_config.get("stop_loss", -0.03)
         self.take_profit = risk_config.get("take_profit", 0.05)
 

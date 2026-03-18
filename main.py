@@ -49,14 +49,14 @@ class QuantTradingSystem:
         # 长周期策略
         if self.config.get("strategy_long_term", {}).get("enabled"):
             self.long_term_strategy = LongTermStrategy(
-                self.config["strategy_long_term"]
+                self.config  # 传递完整配置
             )
             logger.info("长周期策略已加载")
 
         # 日内策略
         if self.config.get("strategy_intraday", {}).get("enabled"):
             self.intraday_strategy = IntradayStrategy(
-                self.config["strategy_intraday"]
+                self.config  # 传递完整配置
             )
             logger.info("日内策略已加载")
 

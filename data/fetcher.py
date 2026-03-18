@@ -248,7 +248,7 @@ class DataFetcher:
         else:
             return self.get_quote_yf(symbol, market)
 
-    def get_history(self, symbol: str, market: str = "us", days: int = 30) -> pd.DataFrame:
+    def get_history(self, symbol: str, market: str = "us", days: int = 30, period: str = None) -> pd.DataFrame:
         """
         获取历史K线
 
@@ -256,14 +256,48 @@ class DataFetcher:
             symbol: 股票代码
             market: 市场类型
             days: 天数
+            period: 时间范围（如 "1mo", "3mo", "1y"），优先于days
 
         Returns:
             DataFrame: OHLCV数据
         """
+        # 如果指定了period，直接用
+        if period:
+            if market == "us":
+                # 美股用 Alpha Vantage
+                return self.get_history_av(symbol, days if days else 30)
+            else:
+                return self.get_history_yf(symbol, period=period)
+        
+        # 否则用 days
         if market == "us":
             return self.get_history_av(symbol, days)
         else:
             return self.get_history_yf(symbol, period=f"{days}d")
+
+    def get_financials(self, symbol: str, market: str = "hk") -> Dict:
+        """获取财务数据"""
+        try:
+            ticker = symbol
+            if market == "hk":
+                if symbol.isdigit():
+                    ticker = symbol.lstrip('0') or '0'
+                    ticker = ticker.zfill(4) + ".HK"
+                    
+            stock = yf.Ticker(ticker)
+            info = stock.info
+            
+            return {
+                "pe": info.get("trailingPE", 0),
+                "market_cap": info.get("marketCap", 0),
+                "dividend_yield": info.get("dividendYield", 0),
+                "beta": info.get("beta", 0),
+                "52w_high": info.get("fiftyTwoWeekHigh", 0),
+                "52w_low": info.get("fiftyTwoWeekLow", 0),
+            }
+        except Exception as e:
+            logger.error(f"获取财务数据失败 {symbol}: {e}")
+            return {}
 
     def get_forex(self, from_curr: str = "USD", to_curr: str = "HKD") -> Optional[dict]:
         """
