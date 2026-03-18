@@ -211,6 +211,10 @@ class LongTermStrategy:
         营收增长 < 0%: 20分
         """
         growth = financials.get("revenue_growth", 0)
+        try:
+            growth = float(growth) if growth else 0
+        except:
+            growth = 0
         if not growth or growth <= 0:
             return 20
 
@@ -236,6 +240,10 @@ class LongTermStrategy:
         ROE < 5%: 20分
         """
         roe = financials.get("roe", 0)
+        try:
+            roe = float(roe) if roe else 0
+        except:
+            roe = 0
         if not roe or roe <= 0:
             return 50
 
@@ -257,6 +265,10 @@ class LongTermStrategy:
         近期涨幅越高越好
         """
         change = quote.get("change_pct", 0)
+        try:
+            change = float(change) if change else 0
+        except:
+            change = 0
 
         # 近1日涨跌幅作为动量代理
         if change >= 10:

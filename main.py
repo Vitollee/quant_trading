@@ -96,6 +96,9 @@ class QuantTradingSystem:
 
         # 生成买入信号
         signals = self.long_term_strategy.generate_signals(all_df)
+        
+        # 过滤无效价格的信号
+        signals = [s for s in signals if s.get("price", 0) > 0]
 
         logger.info(f"\n买入信号 ({len(signals)}个):")
         for s in signals:
@@ -107,16 +110,23 @@ class QuantTradingSystem:
             if signal["symbol"] in self.trading_engine.positions:
                 continue
 
-            # 获取当前价格
-            quote = self.data_fetcher.get_quote(signal["symbol"], signal.get("market", "hk"))
+            # 获取当前价格 - 使用信号中指定的市场
+            market = signal.get("market", "hk")
+            quote = self.data_fetcher.get_quote(signal["symbol"], market)
 
             # 买入 (使用10%仓位)
             amount = self.trading_engine.cash * 0.10
+            price = quote["price"] if quote and quote.get("price") else 0
+            
+            if price <= 0:
+                logger.warning(f"跳过 {signal['symbol']}: 无效价格 {price}")
+                continue
+                
             result = self.trading_engine.buy(
                 signal["symbol"],
-                quote["price"] if quote else 0,
+                price,
                 amount=amount,
-                market=signal.get("market", "hk")
+                market=market
             )
 
         return signals

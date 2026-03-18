@@ -59,6 +59,11 @@ class TradingEngine:
         Returns:
             dict: 交易结果
         """
+        # 检查价格
+        if not price or price <= 0:
+            logger.warning(f"无效价格 {symbol}: {price}")
+            return {"success": False, "reason": "invalid_price"}
+            
         # 计算实际买入数量
         if amount > 0:
             # 滑点

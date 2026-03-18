@@ -248,7 +248,7 @@ class DataFetcher:
         else:
             return self.get_quote_yf(symbol, market)
 
-    def get_history(self, symbol: str, market: str = "us", days: int = 30, period: str = None) -> pd.DataFrame:
+    def get_history(self, symbol: str, market: str = "us", days: int = 30, period: str = None, interval: str = None) -> pd.DataFrame:
         """
         获取历史K线
 
@@ -257,6 +257,7 @@ class DataFetcher:
             market: 市场类型
             days: 天数
             period: 时间范围（如 "1mo", "3mo", "1y"），优先于days
+            interval: K线周期（如 "5m", "15m", "1d"）
 
         Returns:
             DataFrame: OHLCV数据
@@ -267,13 +268,13 @@ class DataFetcher:
                 # 美股用 Alpha Vantage
                 return self.get_history_av(symbol, days if days else 30)
             else:
-                return self.get_history_yf(symbol, period=period)
+                return self.get_history_yf(symbol, period=period, interval=interval)
         
         # 否则用 days
         if market == "us":
             return self.get_history_av(symbol, days)
         else:
-            return self.get_history_yf(symbol, period=f"{days}d")
+            return self.get_history_yf(symbol, period=f"{days}d", interval=interval)
 
     def get_financials(self, symbol: str, market: str = "hk") -> Dict:
         """获取财务数据"""
