@@ -181,7 +181,9 @@ class DataFetcher:
         ticker = symbol
         if market == "hk":
             if symbol.isdigit():
-                ticker = f"{int(symbol)}.HK"
+                # 保持4位数字: 00700 -> 0700
+                ticker = symbol.lstrip('0') or '0'
+                ticker = ticker.zfill(4) + ".HK"
             elif not symbol.endswith(".HK"):
                 ticker = f"{symbol}.HK"
 
