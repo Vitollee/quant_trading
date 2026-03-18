@@ -179,8 +179,11 @@ class DataFetcher:
             dict: 报价数据
         """
         ticker = symbol
-        if market == "hk" and not symbol.endswith(".HK"):
-            ticker = f"{symbol}.HK"
+        if market == "hk":
+            if symbol.isdigit():
+                ticker = f"{int(symbol)}.HK"
+            elif not symbol.endswith(".HK"):
+                ticker = f"{symbol}.HK"
 
         try:
             stock = yf.Ticker(ticker)

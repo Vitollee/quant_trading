@@ -45,7 +45,11 @@ class StockData:
     def _format_symbol(self) -> str:
         """格式化代码"""
         sym = self.symbol
-        if self.market == "hk" and not sym.endswith(".HK"):
+        if self.market == "hk":
+            # 港股: 去掉前导0，如 00700 -> 0700.HK
+            if sym.isdigit():
+                # 去掉前导0
+                sym = str(int(sym))
             return f"{sym}.HK"
         return sym
 
