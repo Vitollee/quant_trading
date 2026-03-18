@@ -179,6 +179,8 @@ data_sources:
   quotes:
     alpha_vantage:
       api_key: "168S7Z8WRRUG3GIQ"
+    finnhub:
+      api_key: "d6tf93hr01qhkb43v280d6tf93hr01qhkb43v28g"
     yahoo:
       enabled: true
     # 港股

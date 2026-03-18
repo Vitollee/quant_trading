@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 class DataFetcher:
     """数据获取器 - 优先富途"""
 
-    def __init__(self, alpha_vantage_key: str = "", use_futu: bool = True):
+    def __init__(self, alpha_vantage_key: str = "", use_futu: bool = True, finnhub_key: str = ""):
         """
         初始化
 
@@ -36,6 +36,7 @@ class DataFetcher:
         """
         self.alpha_vantage_key = alpha_vantage_key
         self.use_futu = use_futu and FUTU_AVAILABLE
+        self.finnhub_key = finnhub_key
         self.quote_ctx = None
         
         # 富途连接
@@ -129,6 +130,35 @@ class DataFetcher:
             logger.error(f"Alpha Vantage 获取失败: {e}")
             return None
 
+    # ==================== Finnhub (美股) ====================
+
+    def get_quote_finnhub(self, symbol: str) -> Optional[dict]:
+        """获取美股报价 (Finnhub)"""
+        if not self.finnhub_key:
+            return None
+            
+        try:
+            import requests
+            url = f"https://finnhub.io/api/v1/quote?symbol={symbol}&token={self.finnhub_key}"
+            r = requests.get(url, timeout=10)
+            data = r.json()
+            
+            if data.get("c"):  # c = current price
+                return {
+                    "symbol": symbol,
+                    "price": data.get("c", 0),
+                    "change": data.get("d", 0),
+                    "change_pct": data.get("dp", 0),
+                    "high": data.get("h", 0),
+                    "low": data.get("l", 0),
+                    "open": data.get("o", 0),
+                    "prev_close": data.get("pc", 0),
+                    "source": "Finnhub"
+                }
+        except Exception as e:
+            logger.error(f"Finnhub 获取失败: {e}")
+        return None
+
     # ==================== Yahoo Finance (港股备用) ====================
 
     def get_quote_yf(self, symbol: str, market: str = "hk") -> Optional[dict]:
@@ -159,20 +189,25 @@ class DataFetcher:
         """
         获取报价 (自动选择数据源)
         
-        优先级: 富途 > Alpha Vantage > Yahoo
+        优先级: 富途 > Finnhub > Alpha Vantage > Yahoo
         """
-        # 优先富途
-        if market.lower() in ["hk", "us"]:
+        # 优先富途 (港股)
+        if market.lower() == "hk":
             quote = self.get_quote_futu(symbol, market.upper())
             if quote:
                 return quote
+            return self.get_quote_yf(symbol, market)
         
-        # 美股用 Alpha Vantage
+        # 美股
         if market.lower() == "us":
+            # 优先 Finnhub
+            quote = self.get_quote_finnhub(symbol)
+            if quote:
+                return quote
+            # 备用 Alpha Vantage
             return self.get_quote_av(symbol)
         
-        # 港股用 Yahoo
-        return self.get_quote_yf(symbol, market)
+        return None
 
     def get_history(self, symbol: str, market: str = "hk", 
                    days: int = 30, period: str = None, interval: str = None) -> pd.DataFrame:
