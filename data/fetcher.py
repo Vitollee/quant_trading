@@ -1,51 +1,106 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-数据获取模块 - Alpha Vantage + Yahoo Finance
-更新：支持美股(Alpha Vantage)、港股(Yahoo)、汇率、加密货币
+数据获取模块 - 富途 + Alpha Vantage + Yahoo Finance
+优先使用富途（实时），备用 Yahoo/Alpha Vantage
 
 作者: 虾虾 🦐
 """
 
-import requests
+try:
+    from futu import *
+    FUTU_AVAILABLE = True
+except ImportError:
+    FUTU_AVAILABLE = False
+
 import yfinance as yf
 import pandas as pd
 from typing import Dict, List, Optional
 from datetime import datetime
 import logging
 
-# 配置日志
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
 class DataFetcher:
-    """数据获取器"""
+    """数据获取器 - 优先富途"""
 
-    def __init__(self, alpha_vantage_key: str = ""):
+    def __init__(self, alpha_vantage_key: str = "", use_futu: bool = True):
         """
         初始化
 
         Args:
             alpha_vantage_key: Alpha Vantage API Key
+            use_futu: 是否优先使用富途
         """
         self.alpha_vantage_key = alpha_vantage_key
-        self.av_base = "https://www.alphavantage.co/query"
+        self.use_futu = use_futu and FUTU_AVAILABLE
+        self.quote_ctx = None
+        
+        # 富途连接
+        if self.use_futu:
+            try:
+                self.quote_ctx = OpenQuoteContext(host='127.0.0.1', port=11111)
+                logger.info("富途行情连接成功")
+            except Exception as e:
+                logger.warning(f"富途连接失败: {e}, 将使用备用数据源")
+                self.use_futu = False
+
+    # ==================== 富途行情 ====================
+    
+    def get_quote_futu(self, symbol: str, market: str = "HK") -> Optional[dict]:
+        """获取富途报价"""
+        if not self.use_futu or not self.quote_ctx:
+            return None
+            
+        try:
+            # 格式化代码
+            code = f"{market.upper()}.{symbol}"
+            ret, data = self.quote_ctx.get_stock_quote([code])
+            if ret == 0 and not data.empty:
+                row = data.iloc[0]
+                return {
+                    "symbol": symbol,
+                    "name": row.get('name', ''),
+                    "price": row.get('last_price', 0),
+                    "open": row.get('open_price', 0),
+                    "high": row.get('high_price', 0),
+                    "low": row.get('low_price', 0),
+                    "volume": row.get('volume', 0),
+                    "change": row.get('change_val', 0),
+                    "change_pct": row.get('change_rate', 0),
+                    "bid": row.get('bid_price', 0),
+                    "ask": row.get('ask_price', 0),
+                    "source": f"Futu {market}"
+                }
+        except Exception as e:
+            logger.error(f"富途获取报价失败: {e}")
+        return None
+
+    def get_history_futu(self, symbol: str, market: str = "HK", 
+                       start: str = "", end: str = "", days: int = 30) -> pd.DataFrame:
+        """获取富途K线"""
+        if not self.use_futu or not self.quote_ctx:
+            return pd.DataFrame()
+            
+        try:
+            code = f"{market.upper()}.{symbol}"
+            ret, data = self.quote_ctx.get_history_kline(
+                code, start or "2020-01-01", end or "2026-12-31", 
+                KL_TYPE.KL_DAY, ""
+            )
+            if ret == 0 and not data.empty:
+                return data
+        except Exception as e:
+            logger.error(f"富途获取K线失败: {e}")
+        return pd.DataFrame()
 
     # ==================== Alpha Vantage (美股) ====================
 
     def get_quote_av(self, symbol: str) -> Optional[dict]:
-        """
-        获取美股报价 (Alpha Vantage)
-
-        Args:
-            symbol: 股票代码 (如 AAPL, MSFT)
-
-        Returns:
-            dict: 报价数据
-        """
+        """获取美股报价 (Alpha Vantage)"""
         if not self.alpha_vantage_key:
-            logger.warning("没有 Alpha Vantage API Key")
             return None
 
         params = {
@@ -55,10 +110,10 @@ class DataFetcher:
         }
 
         try:
-            response = requests.get(self.av_base, params=params, timeout=10)
+            response = requests.get("https://www.alphavantage.co/query", 
+                                  params=params, timeout=10)
             data = response.json()
             quote = data.get("Global Quote", {})
-
             if not quote:
                 return None
 
@@ -68,126 +123,21 @@ class DataFetcher:
                 "change": float(quote.get("09. change", 0)),
                 "change_pct": quote.get("10. change percent", ""),
                 "volume": int(quote.get("06. volume", 0)),
-                "high": float(quote.get("03. high", 0)),
-                "low": float(quote.get("04. low", 0)),
-                "open": float(quote.get("02. open", 0)),
-                "source": "Alpha Vantage"
+                "source": "AlphaVantage"
             }
-
         except Exception as e:
-            logger.error(f"获取报价失败: {e}")
+            logger.error(f"Alpha Vantage 获取失败: {e}")
             return None
 
-    def get_history_av(self, symbol: str, days: int = 30) -> pd.DataFrame:
-        """
-        获取历史K线 (Alpha Vantage)
-
-        Args:
-            symbol: 股票代码
-            days: 天数
-
-        Returns:
-            DataFrame: OHLCV数据
-        """
-        if not self.alpha_vantage_key:
-            return pd.DataFrame()
-
-        params = {
-            "function": "TIME_SERIES_DAILY",
-            "symbol": symbol,
-            "output_size": "compact" if days <= 100 else "full",
-            "apikey": self.alpha_vantage_key
-        }
-
-        try:
-            response = requests.get(self.av_base, params=params, timeout=10)
-            data = response.json()
-            time_series = data.get("Time Series (Daily)", {})
-
-            if not time_series:
-                return pd.DataFrame()
-
-            records = []
-            for date, values in list(time_series.items())[:days]:
-                records.append({
-                    "Date": date,
-                    "Open": float(values.get("1. open", 0)),
-                    "High": float(values.get("2. high", 0)),
-                    "Low": float(values.get("3. low", 0)),
-                    "Close": float(values.get("4. close", 0)),
-                    "Volume": int(values.get("5. volume", 0))
-                })
-
-            df = pd.DataFrame(records)
-            df.set_index("Date", inplace=True)
-            return df
-
-        except Exception as e:
-            logger.error(f"获取历史数据失败: {e}")
-            return pd.DataFrame()
-
-    def get_forex_av(self, from_curr: str, to_curr: str) -> Optional[dict]:
-        """
-        获取汇率 (Alpha Vantage)
-
-        Args:
-            from_curr: 源货币 (如 USD)
-            to_curr: 目标货币 (如 HKD)
-
-        Returns:
-            dict: 汇率数据
-        """
-        if not self.alpha_vantage_key:
-            return None
-
-        params = {
-            "function": "CURRENCY_EXCHANGE_RATE",
-            "from_currency": from_curr,
-            "to_currency": to_curr,
-            "apikey": self.alpha_vantage_key
-        }
-
-        try:
-            response = requests.get(self.av_base, params=params, timeout=10)
-            data = response.json()
-            rate = data.get("Realtime Currency Exchange Rate", {})
-
-            if not rate:
-                return None
-
-            return {
-                "from": rate.get("1. From Currency Code", ""),
-                "to": rate.get("3. To Currency Code", ""),
-                "rate": float(rate.get("5. Exchange Rate", 0))
-            }
-
-        except Exception as e:
-            logger.error(f"获取汇率失败: {e}")
-            return None
-
-    # ==================== Yahoo Finance (港股) ====================
+    # ==================== Yahoo Finance (港股备用) ====================
 
     def get_quote_yf(self, symbol: str, market: str = "hk") -> Optional[dict]:
-        """
-        获取港股报价 (Yahoo Finance)
-
-        Args:
-            symbol: 股票代码
-            market: 市场类型
-
-        Returns:
-            dict: 报价数据
-        """
-        ticker = symbol
-        if market == "hk":
-            if symbol.isdigit():
-                # 保持4位数字: 00700 -> 0700
-                ticker = symbol.lstrip('0') or '0'
-                ticker = ticker.zfill(4) + ".HK"
-            elif not symbol.endswith(".HK"):
-                ticker = f"{symbol}.HK"
-
+        """获取港股报价 (Yahoo)"""
         try:
+            ticker = symbol
+            if market == "hk" and not symbol.endswith(".HK"):
+                ticker = f"{int(symbol):04d}.HK"
+
             stock = yf.Ticker(ticker)
             info = stock.info
 
@@ -197,196 +147,102 @@ class DataFetcher:
                 "change": info.get("regularMarketChange", 0),
                 "change_pct": info.get("regularMarketChangePercent", 0),
                 "volume": info.get("volume", 0),
-                "high52w": info.get("fiftyTwoWeekHigh", 0),
-                "low52w": info.get("fiftyTwoWeekLow", 0),
-                "source": "Yahoo Finance"
+                "source": "Yahoo"
             }
-
         except Exception as e:
-            logger.error(f"获取报价失败: {e}")
+            logger.error(f"Yahoo 获取失败: {e}")
             return None
-
-    def get_history_yf(self, symbol: str, period: str = "1mo", interval: str = "1d") -> pd.DataFrame:
-        """
-        获取历史K线 (Yahoo Finance)
-
-        Args:
-            symbol: 股票代码
-            period: 时间范围
-            interval: K线周期
-
-        Returns:
-            DataFrame: OHLCV数据
-        """
-        try:
-            ticker = symbol
-            if not symbol.endswith(".HK"):
-                ticker = f"{symbol}.HK"
-
-            stock = yf.Ticker(ticker)
-            return stock.history(period=period, interval=interval)
-
-        except Exception as e:
-            logger.error(f"获取历史数据失败: {e}")
-            return pd.DataFrame()
 
     # ==================== 统一接口 ====================
 
-    def get_quote(self, symbol: str, market: str = "us") -> Optional[dict]:
+    def get_quote(self, symbol: str, market: str = "hk") -> Optional[dict]:
         """
         获取报价 (自动选择数据源)
-
-        Args:
-            symbol: 股票代码
-            market: 市场类型 (us/hk)
-
-        Returns:
-            dict: 报价数据
-        """
-        if market == "us":
-            return self.get_quote_av(symbol)
-        else:
-            return self.get_quote_yf(symbol, market)
-
-    def get_history(self, symbol: str, market: str = "us", days: int = 30, period: str = None, interval: str = None) -> pd.DataFrame:
-        """
-        获取历史K线
-
-        Args:
-            symbol: 股票代码
-            market: 市场类型
-            days: 天数
-            period: 时间范围（如 "1mo", "3mo", "1y"），优先于days
-            interval: K线周期（如 "5m", "15m", "1d"）
-
-        Returns:
-            DataFrame: OHLCV数据
-        """
-        # 如果指定了period，直接用
-        if period:
-            if market == "us":
-                # 美股用 Alpha Vantage
-                return self.get_history_av(symbol, days if days else 30)
-            else:
-                return self.get_history_yf(symbol, period=period, interval=interval)
         
-        # 否则用 days
-        if market == "us":
-            return self.get_history_av(symbol, days)
-        else:
-            return self.get_history_yf(symbol, period=f"{days}d", interval=interval)
+        优先级: 富途 > Alpha Vantage > Yahoo
+        """
+        # 优先富途
+        if market.lower() in ["hk", "us"]:
+            quote = self.get_quote_futu(symbol, market.upper())
+            if quote:
+                return quote
+        
+        # 美股用 Alpha Vantage
+        if market.lower() == "us":
+            return self.get_quote_av(symbol)
+        
+        # 港股用 Yahoo
+        return self.get_quote_yf(symbol, market)
 
-    def get_financials(self, symbol: str, market: str = "hk") -> Dict:
-        """获取财务数据"""
+    def get_history(self, symbol: str, market: str = "hk", 
+                   days: int = 30, period: str = None, interval: str = None) -> pd.DataFrame:
+        """获取历史K线"""
+        # 优先富途
+        if self.use_futu and market.lower() in ["hk", "us"]:
+            df = self.get_history_futu(symbol, market.upper(), days=days)
+            if not df.empty:
+                return df
+        
+        # 备用 Yahoo
+        return self.get_history_yf(symbol, period or f"{days}d", interval)
+
+    def get_history_yf(self, symbol: str, period: str = "1mo", interval: str = None) -> pd.DataFrame:
+        """Yahoo K线"""
         try:
-            ticker = symbol
-            if market == "hk":
-                if symbol.isdigit():
-                    ticker = symbol.lstrip('0') or '0'
-                    ticker = ticker.zfill(4) + ".HK"
-                    
+            ticker = f"{int(symbol):04d}.HK" if symbol.isdigit() else symbol
             stock = yf.Ticker(ticker)
-            info = stock.info
-            
-            return {
-                "pe": info.get("trailingPE", 0),
-                "market_cap": info.get("marketCap", 0),
-                "dividend_yield": info.get("dividendYield", 0),
-                "beta": info.get("beta", 0),
-                "52w_high": info.get("fiftyTwoWeekHigh", 0),
-                "52w_low": info.get("fiftyTwoWeekLow", 0),
-            }
+            return stock.history(period=period, interval=interval)
         except Exception as e:
-            logger.error(f"获取财务数据失败 {symbol}: {e}")
-            return {}
+            logger.error(f"Yahoo K线失败: {e}")
+            return pd.DataFrame()
 
     def get_forex(self, from_curr: str = "USD", to_curr: str = "HKD") -> Optional[dict]:
-        """
-        获取汇率
-
-        Args:
-            from_curr: 源货币
-            to_curr: 目标货币
-
-        Returns:
-            dict: 汇率
-        """
-        # 优先用 Alpha Vantage
-        result = self.get_forex_av(from_curr, to_curr)
-        if result:
-            return result
-
-        # 备用 Frankfurter
-        return self.get_forex_frankfurter(from_curr, to_curr)
-
-    def get_forex_frankfurter(self, from_curr: str, to_curr: str) -> Optional[dict]:
-        """获取汇率 (Frankfurter API)"""
+        """获取汇率"""
         try:
             url = f"https://api.frankfurter.app/latest?from={from_curr}&to={to_curr}"
             response = requests.get(url, timeout=10)
             data = response.json()
             rate = data.get("rates", {}).get(to_curr)
-
             if rate:
-                return {
-                    "from": from_curr,
-                    "to": to_curr,
-                    "rate": rate,
-                    "source": "Frankfurter"
-                }
+                return {"from": from_curr, "to": to_curr, "rate": rate, "source": "Frankfurter"}
         except Exception as e:
-            logger.error(f"获取汇率失败: {e}")
-
+            logger.error(f"汇率获取失败: {e}")
         return None
 
     def get_crypto(self, symbol: str = "BTC") -> Optional[dict]:
-        """获取加密货币价格"""
+        """获取加密货币"""
         try:
             url = f"https://api.coingecko.com/api/v3/simple/price?ids={symbol.lower()}&vs_currencies=usd"
             response = requests.get(url, timeout=10)
             data = response.json()
-
             price = data.get(symbol.lower(), {}).get("usd")
             if price:
-                return {
-                    "symbol": symbol.upper(),
-                    "price": price,
-                    "currency": "USD",
-                    "source": "CoinGecko"
-                }
+                return {"symbol": symbol.upper(), "price": price, "source": "CoinGecko"}
         except Exception as e:
-            logger.error(f"获取加密货币失败: {e}")
-
+            logger.error(f"加密货币获取失败: {e}")
         return None
 
+    def close(self):
+        """关闭连接"""
+        if self.quote_ctx:
+            self.quote_ctx.close()
+            logger.info("富途连接已关闭")
 
-# ==================== 测试代码 ====================
+
+# ==================== 测试 ====================
 if __name__ == "__main__":
-    # Alpha Vantage Key
-    API_KEY = "168S7Z8WRRUG3GIQ"
-
-    fetcher = DataFetcher(API_KEY)
-
-    # 测试美股
-    print("=== 美股 (Alpha Vantage) ===")
-    quote = fetcher.get_quote("AAPL", "us")
-    if quote:
-        print(f"{quote['symbol']}: ${quote['price']} ({quote['change_pct']})")
-
-    # 测试港股
-    print("\n=== 港股 (Yahoo Finance) ===")
-    quote = fetcher.get_quote("00700", "hk")
-    if quote:
-        print(f"{quote['symbol']}: ${quote['price']}")
-
-    # 测试汇率
+    fetcher = DataFetcher()
+    
+    print("=== 港股行情 ===")
+    q = fetcher.get_quote("00700", "hk")
+    print(f"腾讯: {q}")
+    
+    print("\n=== 美股行情 ===")
+    q = fetcher.get_quote("AAPL", "us")
+    print(f"Apple: {q}")
+    
     print("\n=== 汇率 ===")
-    rate = fetcher.get_forex("USD", "HKD")
-    if rate:
-        print(f"1 {rate['from']} = {rate['rate']} {rate['to']} ({rate['source']})")
-
-    # 测试加密货币
-    print("\n=== 加密货币 ===")
-    crypto = fetcher.get_crypto("BTC")
-    if crypto:
-        print(f"{crypto['symbol']}: ${crypto['price']}")
+    r = fetcher.get_forex("USD", "HKD")
+    print(f"USD/HKD: {r}")
+    
+    fetcher.close()
