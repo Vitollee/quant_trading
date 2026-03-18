@@ -107,3 +107,67 @@ quant_trading/
 
 ---
 🦐 作者: 虾虾
+
+## 🚀 富途 OpenAPI 配置指南
+
+本系统支持通过**富途 OpenD** 获取实时港股行情和交易。
+
+### 1. 下载 OpenD
+
+从富途官网下载 Linux 命令行版：
+https://openapi.futunn.com/futu-api-doc/quick/opend-base.html
+
+选择 `Futu_OpenD_xxx_Ubuntu18.04` 版本
+
+### 2. 启动 OpenD
+
+```bash
+cd Futu_OpenD_xxx_Ubuntu18.04
+./FutuOpenD --login_account=你的牛牛号 --login_pwd=你的密码
+```
+
+**参数说明：**
+- `--login_account` 牛牛号/手机号/邮箱
+- `--login_pwd` 密码（明文）
+
+**首次登录：**
+- 需要在 APP 上完成问卷评估
+- 登录成功后保持运行
+
+### 3. 安装依赖
+
+```bash
+pip install futu-api pandas numpy
+```
+
+### 4. 测试行情
+
+```python
+from futu import OpenQuoteContext, SubType
+
+q = OpenQuoteContext(host='127.0.0.1', port=11111)
+
+# 订阅港股
+q.subscribe(['HK.00700', 'HK.09988'], [SubType.QUOTE])
+
+# 获取报价
+ret, data = q.get_stock_quote(['HK.00700'])
+print(data)
+
+q.close()
+```
+
+### 5. 权限说明
+
+| 市场 | 权限 |
+|-----|------|
+| 港股 | 默认 LV1 |
+| 美股 | 需开通账户/购买 |
+
+### 6. 常用端口
+
+- 行情端口: 11111
+- WebSocket: 8888（可选）
+
+---
+🦐

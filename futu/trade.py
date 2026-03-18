@@ -18,7 +18,8 @@ from datetime import datetime
 import logging
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(# 富途 OpenAPI 配置
+logger = logging.getLogger(__name__)
+
 class FutuClient:
     """富途 OpenAPI 客户端"""
     
