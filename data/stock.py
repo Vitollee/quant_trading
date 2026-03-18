@@ -339,9 +339,9 @@ class PatternRecognition:
         if len(df) < 20:
             return False
         try:
-            current = df["Close"].iloc[-1]
-            high_20 = df["High"].tail(20).max()
-            return current > high_20
+            current = float(df["Close"].iloc[-1])
+            high_20 = float(df["High"].tail(20).max())
+            return bool(current > high_20)
         except:
             return False
 
@@ -351,9 +351,9 @@ class PatternRecognition:
         if len(df) < 20:
             return False
         try:
-            current = df["Close"].iloc[-1]
-            low_20 = df["Low"].tail(20).min()
-            return current < low_20
+            current = float(df["Close"].iloc[-1])
+            low_20 = float(df["Low"].tail(20).min())
+            return bool(current < low_20)
         except:
             return False
 
@@ -399,6 +399,9 @@ class StockScreener:
 
                 # 获取最新数据
                 latest = df.iloc[-1]
+                # 转换为普通 Series（去除多层索引）
+                if hasattr(latest, 'to_dict'):
+                    latest = pd.Series(latest.to_dict())
                 quote = stock.quote()
                 financials = stock.financials()
 
@@ -406,13 +409,20 @@ class StockScreener:
                 if filters and not self._apply_filters(latest, quote, financials, patterns, filters):
                     continue
 
+                # 安全获取最新值
+                def get_val(series, key, default=0):
+                    val = series.get(key, default)
+                    if hasattr(val, 'iloc'):
+                        return float(val.iloc[0]) if len(val) > 0 else default
+                    return float(val) if val is not None else default
+                
                 results.append({
                     "symbol": symbol,
                     "name": quote.get("shortName", ""),
-                    "price": quote.get("price", 0),
+                    "price": get_val(latest, "Close", quote.get("price", 0)),
                     "change_pct": quote.get("change_pct", 0),
-                    "rsi": latest.get("RSI", 0),
-                    "macd_hist": latest.get("Hist", 0),
+                    "rsi": get_val(latest, "RSI", 50),
+                    "macd_hist": get_val(latest, "Hist", 0),
                     "bb_position": self._bb_position(latest),
                     **patterns,
                     "score": self._calculate_score(latest, patterns)
@@ -430,28 +440,51 @@ class StockScreener:
 
     def _apply_filters(self, latest: pd.Series, quote: Dict, financials: Dict, patterns: Dict, filters: Dict) -> bool:
         """应用筛选条件"""
+        # 安全获取RSI
+        rsi_val = latest.get("RSI", 50)
+        if hasattr(rsi_val, 'iloc'):
+            rsi_val = float(rsi_val.iloc[0]) if len(rsi_val) > 0 else 50
+        rsi_val = float(rsi_val) if rsi_val is not None else 50
+        
         # RSI 筛选
         if "rsi_min" in filters:
-            if latest.get("RSI", 100) < filters["rsi_min"]:
+            if rsi_val < filters["rsi_min"]:
                 return False
         if "rsi_max" in filters:
-            if latest.get("RSI", 0) > filters["rsi_max"]:
+            if rsi_val > filters["rsi_max"]:
                 return False
 
         # 成交量筛选
         if "volume_ratio" in filters:
-            vol_ratio = latest["Volume"] / latest.get("Volume_SMA", 1)
-            if vol_ratio < filters["volume_ratio"]:
-                return False
+            vol = latest.get("Volume", 0)
+            vol_sma = latest.get("Volume_SMA", 1)
+            if hasattr(vol, 'iloc'):
+                vol = float(vol.iloc[0]) if len(vol) > 0 else 0
+            if hasattr(vol_sma, 'iloc'):
+                vol_sma = float(vol_sma.iloc[0]) if len(vol_sma) > 0 else 1
+            vol = float(vol) if vol is not None else 0
+            vol_sma = float(vol_sma) if vol_sma is not None else 1
+            
+            if vol_sma > 0:
+                vol_ratio = vol / vol_sma
+                if vol_ratio < filters["volume_ratio"]:
+                    return False
 
         return True
 
     def _bb_position(self, latest: pd.Series) -> float:
         """布林带位置"""
         try:
-            bb_upper = float(latest.get("BB_Upper", 0))
-            bb_lower = float(latest.get("BB_Lower", 0))
-            close = float(latest.get("Close", 0))
+            # 确保是标量
+            def get_scalar(series, key, default=0):
+                val = series.get(key, default)
+                if hasattr(val, 'iloc'):
+                    return float(val.iloc[0]) if len(val) > 0 else default
+                return float(val) if val is not None else default
+            
+            bb_upper = get_scalar(latest, "BB_Upper", 1)
+            bb_lower = get_scalar(latest, "BB_Lower", 0)
+            close = get_scalar(latest, "Close", 0)
 
             if bb_upper == bb_lower or bb_upper == 0:
                 return 0
@@ -464,12 +497,23 @@ class StockScreener:
         """计算得分"""
         score = 0
 
+        # 安全获取RSI
+        rsi_val = latest.get("RSI", 50)
+        if hasattr(rsi_val, 'iloc'):
+            rsi_val = float(rsi_val.iloc[0]) if len(rsi_val) > 0 else 50
+        rsi_val = float(rsi_val) if rsi_val is not None else 50
+
         # RSI 超卖
-        if latest.get("RSI", 50) < 35:
+        if rsi_val < 35:
             score += 3
 
         # MACD 金叉
-        if latest.get("Hist", 0) > 0:
+        hist_val = latest.get("Hist", 0)
+        if hasattr(hist_val, 'iloc'):
+            hist_val = float(hist_val.iloc[0]) if len(hist_val) > 0 else 0
+        hist_val = float(hist_val) if hist_val is not None else 0
+        
+        if hist_val > 0:
             score += 2
 
         # 布林带超卖
