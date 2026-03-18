@@ -227,23 +227,23 @@ class PatternRecognition:
         patterns = {}
 
         # 早晨之星 (Bullish)
-        patterns["morning_star"] = PatternRecognition._morning_star(recent)
+        patterns["morning_star"] = bool(PatternRecognition._morning_star(recent))
 
         # 黄昏之星 (Bearish)
-        patterns["evening_star"] = PatternRecognition._evening_star(recent)
+        patterns["evening_star"] = bool(PatternRecognition._evening_star(recent))
 
         # 吞没形态 (Bullish/Bearish)
-        patterns["bullish_engulfing"] = PatternRecognition._bullish_engulfing(recent)
-        patterns["bearish_engulfing"] = PatternRecognition._bearish_engulfing(recent)
+        patterns["bullish_engulfing"] = bool(PatternRecognition._bullish_engulfing(recent))
+        patterns["bearish_engulfing"] = bool(PatternRecognition._bearish_engulfing(recent))
 
         # 锤子线 (Bullish)
-        patterns["hammer"] = PatternRecognition._hammer(recent)
+        patterns["hammer"] = bool(PatternRecognition._hammer(recent))
 
         # 突破新高
-        patterns["breakout_high"] = PatternRecognition._breakout_high(recent)
+        patterns["breakout_high"] = bool(PatternRecognition._breakout_high(recent))
 
         # 突破新低
-        patterns["breakout_low"] = PatternRecognition._breakout_low(recent)
+        patterns["breakout_low"] = bool(PatternRecognition._breakout_low(recent))
 
         return patterns
 
@@ -448,14 +448,17 @@ class StockScreener:
 
     def _bb_position(self, latest: pd.Series) -> float:
         """布林带位置"""
-        bb_upper = latest.get("BB_Upper", 0)
-        bb_lower = latest.get("BB_Lower", 0)
-        close = latest.get("Close", 0)
+        try:
+            bb_upper = float(latest.get("BB_Upper", 0))
+            bb_lower = float(latest.get("BB_Lower", 0))
+            close = float(latest.get("Close", 0))
 
-        if bb_upper == bb_lower:
+            if bb_upper == bb_lower or bb_upper == 0:
+                return 0
+
+            return (close - bb_lower) / (bb_upper - bb_lower)
+        except:
             return 0
-
-        return (close - bb_lower) / (bb_upper - bb_lower)
 
     def _calculate_score(self, latest: pd.Series, patterns: Dict) -> int:
         """计算得分"""
