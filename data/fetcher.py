@@ -15,6 +15,7 @@ except ImportError:
 
 import yfinance as yf
 import pandas as pd
+import requests
 from typing import Dict, List, Optional
 from datetime import datetime
 import logging
@@ -256,6 +257,65 @@ class DataFetcher:
         except Exception as e:
             logger.error(f"加密货币获取失败: {e}")
         return None
+
+    def get_technical(self, symbol: str, market: str = "us") -> Dict:
+        """
+        获取技术指标
+        
+        Args:
+            symbol: 股票代码
+            market: 市场类型
+            
+        Returns:
+            dict: 技术指标数据
+        """
+        try:
+            import yfinance as yf
+            
+            ticker = symbol
+            if market == "hk":
+                ticker = f"{int(symbol):04d}.HK"
+            
+            stock = yf.Ticker(ticker)
+            hist = stock.history(period="3mo")
+            
+            if hist.empty:
+                return {}
+            
+            close = hist['Close']
+            
+            # MA
+            ma5 = close.rolling(5).mean().iloc[-1]
+            ma10 = close.rolling(10).mean().iloc[-1]
+            ma20 = close.rolling(20).mean().iloc[-1]
+            
+            # RSI
+            delta = close.diff()
+            gain = delta.where(delta > 0, 0).rolling(14).mean()
+            loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
+            rs = gain / loss
+            rsi = (100 - (100 / (1 + rs))).iloc[-1]
+            
+            # MACD
+            ema12 = close.ewm(span=12).mean()
+            ema26 = close.ewm(span=26).mean()
+            macd = (ema12 - ema26).iloc[-1]
+            signal = macd.ewm(span=9).mean() if hasattr(macd, 'ewm') else macd
+            
+            return {
+                "symbol": symbol,
+                "price": close.iloc[-1],
+                "ma5": ma5,
+                "ma10": ma10,
+                "ma20": ma20,
+                "rsi": rsi,
+                "macd": macd,
+                "volume": hist['Volume'].iloc[-1],
+                "source": "Yahoo"
+            }
+        except Exception as e:
+            logger.error(f"技术指标获取失败: {e}")
+            return {}
 
     def close(self):
         """关闭连接"""
