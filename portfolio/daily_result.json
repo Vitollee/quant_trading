@@ -1,23 +1,59 @@
 {
-  "date": "2026-03-19T13:08:13.264531",
-  "total_value_usd": 13018.32,
-  "total_cost_usd": 13018.32,
+  "date": "2026-03-19T13:13:07.348364",
+  "total_value_usd": 12083.001025641026,
+  "total_cost_usd": 12083.001025641026,
   "profit_usd": 0.0,
   "profit_pct": 0.0,
-  "total_value_hkd": 101542.896,
+  "total_value_hkd": 100047.408,
+  "cash_hkd": 5800,
+  "hk_value_hkd": 39200.0,
+  "us_value_usd": 7057.360000000001,
+  "today_change_pct": -2.237627777098152,
   "holdings": [
+    {
+      "code": "0700.HK",
+      "name": "\u817e\u8baf",
+      "shares": 50,
+      "buy_price": 518.0,
+      "current_price": 518.0,
+      "cost": 25900.0,
+      "value": 25900.0,
+      "profit": 0.0,
+      "profit_pct": 0.0,
+      "change_pct": -5.903723887375113,
+      "market": "HK",
+      "currency": "HKD",
+      "reason": "\u6e2f\u80a1\u9f99\u5934\uff0c\u5fae\u4fe1+\u6e38\u620f+\u4e91\u670d\u52a1\uff0cAI\u5e03\u5c40\uff0c\u80a1\u606f\u7a33\u5b9a"
+    },
+    {
+      "code": "9988.HK",
+      "name": "\u963f\u91cc\u5df4\u5df4",
+      "shares": 100,
+      "buy_price": 133.0,
+      "current_price": 133.0,
+      "cost": 13300.0,
+      "value": 13300.0,
+      "profit": 0.0,
+      "profit_pct": 0.0,
+      "change_pct": -3.4132149981156448,
+      "market": "HK",
+      "currency": "HKD",
+      "reason": "\u7535\u5546+\u4e91\u670d\u52a1AI\u8f6c\u578b\uff0c\u4f30\u503c\u5386\u53f2\u4f4e\u4f4d"
+    },
     {
       "code": "MU",
       "name": "\u7f8e\u5149\u79d1\u6280",
-      "shares": 10,
+      "shares": 8,
       "buy_price": 461.73,
       "current_price": 461.73,
-      "cost": 4617.3,
-      "value": 4617.3,
+      "cost": 3693.84,
+      "value": 3693.84,
       "profit": 0.0,
       "profit_pct": 0.0,
       "change_pct": 0.0087,
-      "reason": "\u9884\u671fPE 6.87\u4e25\u91cd\u4f4e\u4f30\uff0c\u8425\u6536\u589e\u957f56.7%\uff0c\u76c8\u5229\u589e\u957f175%\uff0cROE 22.6%"
+      "market": "US",
+      "currency": "USD",
+      "reason": "\u9884\u671fPE 6.87\u4e25\u91cd\u4f4e\u4f30\uff0c\u8425\u6536\u589e\u957f56.7%\uff0c\u76c8\u5229\u589e\u957f175%"
     },
     {
       "code": "NVDA",
@@ -30,46 +66,24 @@
       "profit": 0.0,
       "profit_pct": 0.0,
       "change_pct": -0.841,
-      "reason": "AI\u82af\u7247\u9f99\u5934\uff0cROE 101.5%\uff0c\u8425\u6536\u589e\u957f73%\uff0c\u5e02\u573a\u4efd\u989d\u6301\u7eed\u6269\u5927"
+      "market": "US",
+      "currency": "USD",
+      "reason": "AI\u82af\u7247\u9f99\u5934\uff0cROE 101.5%\uff0c\u8425\u6536\u589e\u957f73%"
     },
     {
       "code": "GOOGL",
       "name": "Google",
-      "shares": 10,
+      "shares": 8,
       "buy_price": 307.69,
       "current_price": 307.69,
-      "cost": 3076.9,
-      "value": 3076.9,
+      "cost": 2461.52,
+      "value": 2461.52,
       "profit": 0.0,
       "profit_pct": 0.0,
       "change_pct": -1.0389,
-      "reason": "\u4e91\u670d\u52a1\u589e\u957f\u7a33\u5065\uff0cAI\u5e03\u5c40\u9886\u5148\uff0c\u4f30\u503c\u5408\u7406\uff0c\u80a1\u606f\u7a33\u5b9a"
-    },
-    {
-      "code": "MSFT",
-      "name": "Microsoft",
-      "shares": 8,
-      "buy_price": 391.79,
-      "current_price": 391.79,
-      "cost": 3134.32,
-      "value": 3134.32,
-      "profit": 0.0,
-      "profit_pct": 0.0,
-      "change_pct": -1.9078,
-      "reason": "\u4e91\u670d\u52a1Azure\u589e\u957f\u5f3a\u52b2\uff0cAI Copilot\u53d8\u73b0\u6f5c\u529b\u5927\uff0cROE 34.4%"
-    },
-    {
-      "code": "PSTG",
-      "name": "Pure Storage",
-      "shares": 20,
-      "buy_price": 64.39,
-      "current_price": 64.39,
-      "cost": 1287.8,
-      "value": 1287.8,
-      "profit": 0.0,
-      "profit_pct": 0.0,
-      "change_pct": 1.4975,
-      "reason": "\u50a8\u5b58\u677f\u5757\u540e\u8d77\u4e4b\u79c0\uff0c\u8425\u6536\u589e\u957f20.4%\uff0c\u6bdb\u522970.6%"
+      "market": "US",
+      "currency": "USD",
+      "reason": "\u4e91\u670d\u52a1\u589e\u957f\u7a33\u5065\uff0cAI\u9886\u5148\uff0c\u4f30\u503c\u5408\u7406"
     }
   ]
 }

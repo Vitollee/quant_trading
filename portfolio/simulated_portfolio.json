@@ -1,50 +1,54 @@
 {
   "created": "2026-03-19",
   "capital_hkd": 100000,
-  "capital_usd_approx": 12800,
   "portfolio": [
+    {
+      "code": "0700.HK",
+      "name": "腾讯",
+      "shares": 50,
+      "buy_price": 518.00,
+      "allocation_hkd": 25900,
+      "reason": "港股龙头，微信+游戏+云服务，AI布局，股息稳定",
+      "market": "HK"
+    },
+    {
+      "code": "9988.HK",
+      "name": "阿里巴巴",
+      "shares": 100,
+      "buy_price": 133.00,
+      "allocation_hkd": 13300,
+      "reason": "电商+云服务AI转型，估值历史低位",
+      "market": "HK"
+    },
     {
       "code": "MU",
       "name": "美光科技",
-      "shares": 10,
+      "shares": 8,
       "buy_price": 461.73,
-      "allocation_hkd": 36000,
-      "reason": "预期PE 6.87严重低估，营收增长56.7%，盈利增长175%，ROE 22.6%"
+      "allocation_hkd": 28800,
+      "reason": "预期PE 6.87严重低估，营收增长56.7%，盈利增长175%",
+      "market": "US"
     },
     {
       "code": "NVDA",
       "name": "Nvidia",
       "shares": 5,
       "buy_price": 180.40,
-      "allocation_hkd": 7200,
-      "reason": "AI芯片龙头，ROE 101.5%，营收增长73%，市场份额持续扩大"
+      "allocation_hkd": 7000,
+      "reason": "AI芯片龙头，ROE 101.5%，营收增长73%",
+      "market": "US"
     },
     {
       "code": "GOOGL",
       "name": "Google",
-      "shares": 10,
-      "buy_price": 307.69,
-      "allocation_hkd": 24500,
-      "reason": "云服务增长稳健，AI布局领先，估值合理，股息稳定"
-    },
-    {
-      "code": "MSFT",
-      "name": "Microsoft",
       "shares": 8,
-      "buy_price": 391.79,
-      "allocation_hkd": 25000,
-      "reason": "云服务Azure增长强劲，AI Copilot变现潜力大，ROE 34.4%"
-    },
-    {
-      "code": "PSTG",
-      "name": "Pure Storage",
-      "shares": 20,
-      "buy_price": 64.39,
-      "allocation_hkd": 8000,
-      "reason": "储存板块后起之秀，营收增长20.4%，毛利70.6%"
+      "buy_price": 307.69,
+      "allocation_hkd": 19200,
+      "reason": "云服务增长稳健，AI领先，估值合理",
+      "market": "US"
     }
   ],
-  "cash_hkd": 0,
-  "total_invested_hkd": 100700,
-  "notes": "超支少量作为灵活资金"
+  "cash_hkd": 5800,
+  "total_invested_hkd": 94200,
+  "notes": "港股40% + 美股60%"
 }
