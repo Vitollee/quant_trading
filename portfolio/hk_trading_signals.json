@@ -1,0 +1,87 @@
+{
+  "date": "2026-03-19",
+  "swing_trade": [
+    {
+      "code": "HK.02382",
+      "name": "舜宇光学科技",
+      "price": 56.7,
+      "change": 0.0,
+      "turnover_rate": 0.92,
+      "score": 64
+    },
+    {
+      "code": "HK.01088",
+      "name": "中国神华",
+      "price": 48.88,
+      "change": 0.0,
+      "turnover_rate": 0.5,
+      "score": 64
+    },
+    {
+      "code": "HK.03690",
+      "name": "美团-W",
+      "price": 80.65,
+      "change": 0.0,
+      "turnover_rate": 0.57,
+      "score": 64
+    },
+    {
+      "code": "HK.01810",
+      "name": "小米集团-W",
+      "price": 36.36,
+      "change": 0.0,
+      "turnover_rate": 1.09,
+      "score": 62
+    },
+    {
+      "code": "HK.00763",
+      "name": "中兴通讯",
+      "price": 23.94,
+      "change": 0.0,
+      "turnover_rate": 0.96,
+      "score": 61
+    }
+  ],
+  "day_trade": [
+    {
+      "code": "HK.01810",
+      "name": "小米集团-W",
+      "price": 36.36,
+      "change": 0.0,
+      "volume": 285500000,
+      "score": 86
+    },
+    {
+      "code": "HK.00857",
+      "name": "中国石油股份",
+      "price": 10.72,
+      "change": 0.0,
+      "volume": 84500000,
+      "score": 86
+    },
+    {
+      "code": "HK.00992",
+      "name": "联想集团",
+      "price": 9.35,
+      "change": 0.0,
+      "volume": 55600000,
+      "score": 83
+    },
+    {
+      "code": "HK.09988",
+      "name": "阿里巴巴-W",
+      "price": 132.9,
+      "change": 0.0,
+      "volume": 76200000,
+      "score": 83
+    },
+    {
+      "code": "HK.01398",
+      "name": "工商银行",
+      "price": 6.58,
+      "change": 0.0,
+      "volume": 98100000,
+      "score": 81
+    }
+  ]
+}
