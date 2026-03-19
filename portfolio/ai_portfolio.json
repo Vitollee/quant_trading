@@ -1,0 +1,89 @@
+{
+  "created": "2026-03-19",
+  "strategy": "AI智能评分 + 板块轮动",
+  "capital_hkd": 100000,
+  "holdings": [
+    {
+      "code": "MU",
+      "name": "美光科技",
+      "shares": 4,
+      "price": 461.73,
+      "amount_hkd": 14851,
+      "weight": 0.149,
+      "reason": "预期PE 6.87严重低估，营收增长56.7%",
+      "market": "US"
+    },
+    {
+      "code": "HK.01810",
+      "name": "小米集团",
+      "shares": 353,
+      "price": 36.40,
+      "amount_hkd": 12871,
+      "weight": 0.129,
+      "reason": "今日强势+3%，手机汽车AIoT多线发展",
+      "market": "HK"
+    },
+    {
+      "code": "NVDA",
+      "name": "Nvidia",
+      "shares": 9,
+      "price": 180.40,
+      "amount_hkd": 12871,
+      "weight": 0.129,
+      "reason": "AI芯片龙头，ROE 101.5%",
+      "market": "US"
+    },
+    {
+      "code": "GOOGL",
+      "name": "Google",
+      "shares": 5,
+      "price": 307.69,
+      "amount_hkd": 12871,
+      "weight": 0.129,
+      "reason": "云服务稳健，AI领先，估值合理",
+      "market": "US"
+    },
+    {
+      "code": "MSFT",
+      "name": "Microsoft",
+      "shares": 4,
+      "price": 391.79,
+      "amount_hkd": 12871,
+      "weight": 0.129,
+      "reason": "云服务Azure增长强劲，AI Copilot变现潜力大",
+      "market": "US"
+    },
+    {
+      "code": "HK.02382",
+      "name": "舜宇光学",
+      "shares": 209,
+      "price": 56.70,
+      "amount_hkd": 11881,
+      "weight": 0.119,
+      "reason": "摄像头龙头，长线价值",
+      "market": "HK"
+    },
+    {
+      "code": "HK.00700",
+      "name": "腾讯控股",
+      "shares": 21,
+      "price": 517.00,
+      "amount_hkd": 10891,
+      "weight": 0.109,
+      "reason": "港股龙头，今日超跌反弹",
+      "market": "HK"
+    },
+    {
+      "code": "HK.01088",
+      "name": "中国神华",
+      "shares": 222,
+      "price": 48.92,
+      "amount_hkd": 10891,
+      "weight": 0.109,
+      "reason": "高股息能源股，今日强势",
+      "market": "HK"
+    }
+  ],
+  "cash_hkd": 0,
+  "total_invested_hkd": 100000
+}
