@@ -1,0 +1,75 @@
+{
+  "date": "2026-03-19T13:08:13.264531",
+  "total_value_usd": 13018.32,
+  "total_cost_usd": 13018.32,
+  "profit_usd": 0.0,
+  "profit_pct": 0.0,
+  "total_value_hkd": 101542.896,
+  "holdings": [
+    {
+      "code": "MU",
+      "name": "\u7f8e\u5149\u79d1\u6280",
+      "shares": 10,
+      "buy_price": 461.73,
+      "current_price": 461.73,
+      "cost": 4617.3,
+      "value": 4617.3,
+      "profit": 0.0,
+      "profit_pct": 0.0,
+      "change_pct": 0.0087,
+      "reason": "\u9884\u671fPE 6.87\u4e25\u91cd\u4f4e\u4f30\uff0c\u8425\u6536\u589e\u957f56.7%\uff0c\u76c8\u5229\u589e\u957f175%\uff0cROE 22.6%"
+    },
+    {
+      "code": "NVDA",
+      "name": "Nvidia",
+      "shares": 5,
+      "buy_price": 180.4,
+      "current_price": 180.4,
+      "cost": 902.0,
+      "value": 902.0,
+      "profit": 0.0,
+      "profit_pct": 0.0,
+      "change_pct": -0.841,
+      "reason": "AI\u82af\u7247\u9f99\u5934\uff0cROE 101.5%\uff0c\u8425\u6536\u589e\u957f73%\uff0c\u5e02\u573a\u4efd\u989d\u6301\u7eed\u6269\u5927"
+    },
+    {
+      "code": "GOOGL",
+      "name": "Google",
+      "shares": 10,
+      "buy_price": 307.69,
+      "current_price": 307.69,
+      "cost": 3076.9,
+      "value": 3076.9,
+      "profit": 0.0,
+      "profit_pct": 0.0,
+      "change_pct": -1.0389,
+      "reason": "\u4e91\u670d\u52a1\u589e\u957f\u7a33\u5065\uff0cAI\u5e03\u5c40\u9886\u5148\uff0c\u4f30\u503c\u5408\u7406\uff0c\u80a1\u606f\u7a33\u5b9a"
+    },
+    {
+      "code": "MSFT",
+      "name": "Microsoft",
+      "shares": 8,
+      "buy_price": 391.79,
+      "current_price": 391.79,
+      "cost": 3134.32,
+      "value": 3134.32,
+      "profit": 0.0,
+      "profit_pct": 0.0,
+      "change_pct": -1.9078,
+      "reason": "\u4e91\u670d\u52a1Azure\u589e\u957f\u5f3a\u52b2\uff0cAI Copilot\u53d8\u73b0\u6f5c\u529b\u5927\uff0cROE 34.4%"
+    },
+    {
+      "code": "PSTG",
+      "name": "Pure Storage",
+      "shares": 20,
+      "buy_price": 64.39,
+      "current_price": 64.39,
+      "cost": 1287.8,
+      "value": 1287.8,
+      "profit": 0.0,
+      "profit_pct": 0.0,
+      "change_pct": 1.4975,
+      "reason": "\u50a8\u5b58\u677f\u5757\u540e\u8d77\u4e4b\u79c0\uff0c\u8425\u6536\u589e\u957f20.4%\uff0c\u6bdb\u522970.6%"
+    }
+  ]
+}
