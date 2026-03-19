@@ -29,8 +29,9 @@ markets:
       - "00001.HK"   # 长江实业
     # 筛选条件
     filters:
-      min_market_cap: 50000000000   # 最小市值 500亿
+      min_market_cap: 50000000000   # 最小市值 500亿 (50B)
       min_daily_volume: 10000000     # 最小日成交 1000万
+      min_turnover_rate: 0.5          # 最小换手率 0.5%
 
   # 美股市场
   us:
@@ -46,8 +47,9 @@ markets:
       - "AMD"       # AMD
     # 筛选条件
     filters:
-      min_market_cap: 100000000000  # 最小市值 1000亿
+      min_market_cap: 100000000000  # 最小市值 1000亿 (100B)
       min_daily_volume: 5000000      # 最小日成交 500万
+      min_turnover_rate: 0.5         # 最小换手率 0.5%
 
 # ---------------------- 长周期策略配置 ----------------------
 strategy_long_term:

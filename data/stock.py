@@ -470,6 +470,25 @@ class StockScreener:
                 if vol_ratio < filters["volume_ratio"]:
                     return False
 
+        # 市值筛选 (单位: 亿)
+        if "market_cap_min" in filters:
+            market_cap = quote.get("market_cap", 0)
+            if market_cap < filters["market_cap_min"]:
+                return False
+        if "market_cap_max" in filters:
+            market_cap = quote.get("market_cap", float('inf'))
+            if market_cap > filters["market_cap_max"]:
+                return False
+
+        # 换手率筛选 (%)
+        if "min_turnover_rate" in filters:
+            turnover_rate = latest.get("turnover_rate", 0)
+            if hasattr(turnover_rate, 'iloc'):
+                turnover_rate = float(turnover_rate.iloc[0]) if len(turnover_rate) > 0 else 0
+            turnover_rate = float(turnover_rate) if turnover_rate is not None else 0
+            if turnover_rate < filters["min_turnover_rate"]:
+                return False
+
         return True
 
     def _bb_position(self, latest: pd.Series) -> float:
