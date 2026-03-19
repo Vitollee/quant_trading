@@ -2,7 +2,7 @@
 # Futu OpenD 自动启动脚本
 # 检查并重启 Futu OpenD 如果它没有运行
 
-FUTU_PATH="/root/下载/Futu_OpenD_10.0.6018_Ubuntu18.04/Futu_OpenD_10.0.6018_Ubuntu18.04"
+FUTU_PATH="/home/vito/下载/Futu_OpenD_10.0.6018_Ubuntu18.04/Futu_OpenD_10.0.6018_Ubuntu18.04"
 LOG_FILE="$FUTU_PATH/futu.log"
 PID_FILE="$FUTU_PATH/futu.pid"
 

@@ -2,17 +2,16 @@
 # -*- coding: utf-8 -*-
 """
 Futu OpenD 健康检查与自动重启
-由 AI 调用检测 API 是否正常，异常时自动重启
 """
 
 import subprocess
 import time
 import socket
-from futu import OpenQuoteContext
+from futu import OpenQuoteContext, SubType
 
 FUTU_HOST = "127.0.0.1"
 FUTU_PORT = 11111
-FUTU_PATH = "/root/下载/Futu_OpenD_10.0.6018_Ubuntu18.04/Futu_OpenD_10.0.6018_Ubuntu18.04"
+FUTU_PATH = "/home/vito/下载/Futu_OpenD_10.0.6018_Ubuntu18.04/Futu_OpenD_10.0.6018_Ubuntu18.04"
 
 
 def is_port_open(host, port, timeout=2):
@@ -45,13 +44,23 @@ def test_futu_api():
     """测试 Futu API 是否可用"""
     try:
         ctx = OpenQuoteContext(FUTU_HOST, FUTU_PORT)
+        
+        # 先订阅
+        ret = ctx.subscribe(['HK.00700'], [SubType.QUOTE], True)
+        if ret[0] != 0:
+            ctx.close()
+            return False, f"订阅失败: {ret}"
+        
+        time.sleep(1)
+        
+        # 获取报价
         ret, data = ctx.get_stock_quote(['HK.00700'])
         ctx.close()
         
         if ret == 0 and data is not None:
             return True, "API 正常"
         else:
-            return False, f"API 错误: {ret}"
+            return False, f"获取数据失败: {ret}"
     except Exception as e:
         return False, str(e)
 
