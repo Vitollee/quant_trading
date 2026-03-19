@@ -37,6 +37,7 @@ markets:
   us:
     enabled: true
     watchlist:    # 自选股列表
+      # 科技巨头
       - "AAPL"      # Apple
       - "MSFT"      # Microsoft
       - "GOOGL"     # Google
@@ -45,6 +46,16 @@ markets:
       - "TSLA"      # Tesla
       - "META"      # Meta
       - "AMD"       # AMD
+      # 储存板块
+      - "WDC"       # Western Digital
+      - "STX"       # Seagate
+      - "NTAP"      # NetApp
+      - "DELL"      # Dell
+      - "HPE"       # HP Enterprise
+      # 热门板块
+      - "SMCI"      # Super Micro Computer
+      - "INTC"      # Intel
+      - "QCOM"      # Qualcomm
     # 筛选条件
     filters:
       min_market_cap: 100000000000  # 最小市值 1000亿 (100B)
