@@ -46,12 +46,13 @@ markets:
       - "TSLA"      # Tesla
       - "META"      # Meta
       - "AMD"       # AMD
-      # 储存板块
+      # 储存/内存板块
       - "WDC"       # Western Digital
-      - "STX"       # Seagate
-      - "NTAP"      # NetApp
-      - "DELL"      # Dell
-      - "HPE"       # HP Enterprise
+      - "STX"       # Seagate  
+      - "MU"        # Micron
+      - "PSTG"      # Pure Storage
+      - "RMBS"      # Rambus
+      - "SIMO"      # Silicon Motion
       # 热门板块
       - "SMCI"      # Super Micro Computer
       - "INTC"      # Intel

@@ -20,7 +20,11 @@ logger = logging.getLogger(__name__)
 # ==================== 热门板块 ====================
 
 SECTORS = {
-    "储存板块": {
+    "储存/内存": {
+        "description": "AI数据中心存储需求强劲，内存芯片短缺",
+        "stocks": ["WDC", "STX", "MU", "PSTG", "RMBS", "SIMO"]
+    },
+    "储存板块(原)": {
         "description": "AI数据中心存储需求强劲",
         "stocks": ["WDC", "STX", "NTAP", "DELL", "HPE"]
     },
