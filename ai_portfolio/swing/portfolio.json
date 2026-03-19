@@ -2,32 +2,34 @@
   "strategy": "swing",
   "name": "波段交易组合",
   "description": "Swing Trade，持有2-30天，追求波段收益",
-  "capital_hkd": 30000,
-  "capital_allocation": "30%",
+  "capital_hkd": 100000,
+  "capital_allocation": "100%",
   
   "holdings": [
     {
       "code": "HK.01810",
       "name": "小米集团",
       "name_en": "Xiaomi",
-      "shares": 150,
+      "shares": 500,
       "buy_price": 36.40,
       "buy_date": "2026-03-19",
       "currency": "HKD",
-      "amount_hkd": 5460,
+      "amount_hkd": 18200,
+      "weight": "18%",
       "target_price": 38.50,
       "stop_loss": 34.00,
-      "reason": "今日强势+3%，换手率1.09%，突破后跟进"
+      "reason": "今日强势+3%，换手率1.09%，突破后跟进，评分62分"
     },
     {
       "code": "HK.02382",
       "name": "舜宇光学",
       "name_en": "Sunny Optical",
-      "shares": 100,
+      "shares": 350,
       "buy_price": 56.70,
       "buy_date": "2026-03-19",
       "currency": "HKD",
-      "amount_hkd": 5670,
+      "amount_hkd": 19845,
+      "weight": "20%",
       "target_price": 60.00,
       "stop_loss": 52.00,
       "reason": "摄像头龙头，超跌反弹机会，评分64分"
@@ -36,11 +38,12 @@
       "code": "HK.00857",
       "name": "中国石油",
       "name_en": "PetroChina",
-      "shares": 500,
+      "shares": 1800,
       "buy_price": 10.72,
       "buy_date": "2026-03-19",
       "currency": "HKD",
-      "amount_hkd": 5360,
+      "amount_hkd": 19296,
+      "weight": "19%",
       "target_price": 11.50,
       "stop_loss": 10.00,
       "reason": "能源板块强势，估值偏低，股息率高"
@@ -49,16 +52,34 @@
       "code": "HK.03690",
       "name": "美团",
       "name_en": "Meituan",
-      "shares": 70,
+      "shares": 250,
       "buy_price": 80.65,
       "buy_date": "2026-03-19",
       "currency": "HKD",
-      "amount_hkd": 5646,
+      "amount_hkd": 20162,
+      "weight": "20%",
       "target_price": 85.00,
       "stop_loss": 75.00,
       "reason": "消费复苏受益，评分64分，突破整理区间"
+    },
+    {
+      "code": "HK.01088",
+      "name": "中国神华",
+      "name_en": "China Shenhua",
+      "shares": 400,
+      "buy_price": 48.88,
+      "buy_date": "2026-03-19",
+      "currency": "HKD",
+      "amount_hkd": 19552,
+      "weight": "20%",
+      "target_price": 52.00,
+      "stop_loss": 45.00,
+      "reason": "高股息能源股，估值便宜，评分64分"
     }
   ],
+  
+  "total_invested_hkd": 97055,
+  "cash_hkd": 2945,
   
   "rules": {
     "stop_loss": "-5% 止损",
@@ -69,6 +90,6 @@
   
   "signals": {
     "last_scan": "2026-03-19",
-    "top_picks": ["小米", "舜宇光学", "美团"]
+    "top_picks": ["小米", "舜宇光学", "美团", "中国神华", "中国石油"]
   }
 }

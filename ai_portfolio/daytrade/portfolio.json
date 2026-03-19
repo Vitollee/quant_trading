@@ -2,16 +2,8 @@
   "strategy": "daytrade",
   "name": "日内交易组合",
   "description": "Day Trade，当日开平仓，不留隔夜仓",
-  "capital_hkd": 10000,
-  "capital_allocation": "10%",
-  
-  "rules": {
-    "max_loss": "-1% 当日亏损上限",
-    "max_profit": "+3% 止盈",
-    "stop_loss": "-2% 止损",
-    "exit_time": "15:30 收盘前必须平仓",
-    "max_positions": "2只同时持有"
-  },
+  "capital_hkd": 100000,
+  "capital_allocation": "100%",
   
   "today_trades": [
     {
@@ -22,28 +14,59 @@
           "code": "HK.01810",
           "name": "小米集团",
           "action": "BUY",
-          "price_range": "36.00-36.50",
-          "shares": 100,
+          "price": 36.40,
+          "shares": 500,
+          "amount_hkd": 18200,
+          "target_exit": 37.20,
+          "stop_loss": 35.50,
           "reason": "今日成交量285.5M，评分86分，强势股"
         },
         {
           "code": "HK.00857",
           "name": "中国石油",
           "action": "BUY",
-          "price_range": "10.50-10.80",
-          "shares": 300,
+          "price": 10.72,
+          "shares": 1700,
+          "amount_hkd": 18224,
+          "target_exit": 10.95,
+          "stop_loss": 10.45,
           "reason": "能源板块强势，成交量84.5M，评分86分"
+        },
+        {
+          "code": "HK.00992",
+          "name": "联想集团",
+          "action": "BUY",
+          "price": 9.35,
+          "shares": 1800,
+          "amount_hkd": 16830,
+          "target_exit": 9.55,
+          "stop_loss": 9.10,
+          "reason": "科技股反弹，成交量55.6M，评分83分"
         }
       ]
     }
   ],
+  
+  "total_planned_hkd": 53254,
+  "cash_reserve_hkd": 46746,
+  
+  "rules": {
+    "max_loss": "-1% 当日亏损上限",
+    "max_profit": "+3% 止盈",
+    "stop_loss": "-2% 止损",
+    "exit_time": "15:30 收盘前必须平仓",
+    "max_positions": "3只同时持有",
+    "max_single_position": "20% 仓位"
+  },
   
   "signals": {
     "last_scan": "2026-03-19",
     "hot_picks": [
       {"code": "HK.01810", "name": "小米", "score": 86},
       {"code": "HK.00857", "name": "中国石油", "score": 86},
-      {"code": "HK.00992", "name": "联想", "score": 83}
+      {"code": "HK.00992", "name": "联想", "score": 83},
+      {"code": "HK.09988", "name": "阿里巴巴", "score": 83},
+      {"code": "HK.01398", "name": "工商银行", "score": 81}
     ]
   }
 }
