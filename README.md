@@ -56,14 +56,27 @@ print(result)
 ## 运行脚本 | Run Scripts
 
 ```bash
-cd /.../quant_trading
-pip install yfinance pandas numpy
+cd ~/Desktop/quant_trading
+
+# 安装依赖 | Install Dependencies
+pip install -r requirements.txt
 
 # 运行测试 | Run Test
 python data/stock.py
 
 # 运行主程序 | Run Main
 python main.py --mode all
+```
+
+**依赖包 | Dependencies:**
+```
+pandas>=1.5.0
+numpy>=1.21.0
+requests>=2.28.0
+beautifulsoup4>=4.11.0
+yfinance>=0.2.0
+pyyaml>=6.0
+lxml>=4.9.0
 ```
 
 ## 项目结构 | Project Structure
