@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-数据获取模块 - 富途 + Alpha Vantage + Yahoo Finance
-优先使用富途（实时），备用 Yahoo/Alpha Vantage
+数据获取模块 - 富途 + Finnhub + Yahoo Finance
+支持 setup/api_config.py 和 setup/watchlist.py
 
 作者: 虾虾 🦐
 """
@@ -18,7 +18,7 @@ except ImportError:
 import yfinance as yf
 import pandas as pd
 import requests
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 from datetime import datetime
 import logging
 
@@ -27,25 +27,35 @@ logger = logging.getLogger(__name__)
 
 
 class DataFetcher:
-    """数据获取器 - 优先富途"""
+    """数据获取器 - 优先富途港股 / Finnhub美股"""
 
-    def __init__(self, alpha_vantage_key: str = "", use_futu: bool = True, finnhub_key: str = ""):
+    def __init__(self, config: 'APIConfig' = None):
         """
         初始化
 
         Args:
-            alpha_vantage_key: Alpha Vantage API Key
-            use_futu: 是否优先使用富途
+            config: APIConfig 对象，如果为None则尝试从配置文件加载
         """
-        self.alpha_vantage_key = alpha_vantage_key
-        self.use_futu = use_futu and FUTU_AVAILABLE
-        self.finnhub_key = finnhub_key
+        self.config = config
+        
+        if config:
+            self.use_futu = config.get_futu_config().get("account", False) and FUTU_AVAILABLE
+            self.finnhub_key = config.get_finnhub_key()
+            self.alpha_vantage_key = config.get_alpha_vantage_key()
+        else:
+            self.use_futu = False
+            self.finnhub_key = ""
+            self.alpha_vantage_key = ""
+        
         self.quote_ctx = None
         
         # 富途连接
         if self.use_futu:
             try:
-                self.quote_ctx = OpenQuoteContext(host='127.0.0.1', port=11111)
+                futu_config = config.get_futu_config()
+                host = futu_config.get("host", "127.0.0.1")
+                port = futu_config.get("port", 11111)
+                self.quote_ctx = OpenQuoteContext(host=host, port=port)
                 logger.info("富途行情连接成功")
             except Exception as e:
                 logger.warning(f"富途连接失败: {e}, 将使用备用数据源")

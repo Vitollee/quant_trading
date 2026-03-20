@@ -20,6 +20,10 @@ TAKE_PROFIT_1 = 37000  # 第一止盈
 TAKE_PROFIT_2 = 38500  # 第二止盈
 TAKE_PROFIT_3 = 40000  # 第三止盈
 
+# 加仓信号价位 (港币/盎司)
+ADD_POSITION_ZONE = 35500   # 加仓区间下限（回到35,500-36,000可小仓试单）
+ADD_POSITION_MA20 = 39100   # 突破20日均线确认升势（可加仓）
+
 # HSBC银行价溢价系数 (国际金价 × 1.09 ≈ HSBC价)
 HSBC_PREMIUM = 1.09
 
@@ -48,7 +52,27 @@ def get_gold_price():
     return None, None
 
 
-def check_alerts(price):
+def get_gold_with_ma():
+    """获取金价及技术指标"""
+    try:
+        gld = yf.Ticker("GLD")
+        hist = gld.history(period="3mo")
+        if hist.empty:
+            return None, None, None
+        
+        gld_price = hist['Close'].iloc[-1] * 10 * 7.8 * HSBC_PREMIUM
+        ma20 = hist['Close'].rolling(20).mean().iloc[-1] * 10 * 7.8 * HSBC_PREMIUM
+        ma50 = hist['Close'].rolling(50).mean().iloc[-1] * 10 * 7.8 * HSBC_PREMIUM if len(hist) >= 50 else None
+        
+        # 30日低点
+        low_30d = hist['Low'].rolling(30).min().iloc[-1] * 10 * 7.8 * HSBC_PREMIUM
+        
+        return gld_price, ma20, low_30d
+    except:
+        return None, None, None
+
+
+def check_alerts(price, ma20=None, low_30d=None):
     """检查是否触发警报"""
     alerts = []
     
@@ -91,6 +115,24 @@ def check_alerts(price):
             "priority": "LOW"
         })
     
+    # 加仓信号检查
+    if ma20 and low_30d:
+        # 信号1：回到加仓区间 (35,500 - 36,000)
+        if 35500 <= price <= 36000:
+            alerts.append({
+                "type": "ADD_POSITION_ZONE",
+                "message": f"🟡 加仓机会：金价回到35,500-36,000区间\n当前: HK${price:.0f}\n可小仓试单，止损34,500",
+                "priority": "MEDIUM"
+            })
+        
+        # 信号2：突破20日均线
+        if price >= ma20:
+            alerts.append({
+                "type": "BREAK_MA20",
+                "message": f"🟢 加仓信号：突破20日均线！\n当前: HK${price:.0f}\n均线: HK${ma20:.0f}\n确认升势，可加仓",
+                "priority": "HIGH"
+            })
+    
     return alerts
 
 
@@ -130,15 +172,23 @@ def run_monitor():
     print(f"[{datetime.now().strftime('%H:%M:%S')}] 金价监控...")
     
     price, source = get_gold_price()
+    price_ma, ma20, low_30d = get_gold_with_ma()
     
     if price is None:
         print("❌ 无法获取金价")
         return None
     
+    if price_ma is None:
+        price_ma = price
+        ma20 = None
+        low_30d = None
+    
     print(f"💰 金价: HK${price:.0f}/oz ({source})")
+    if ma20:
+        print(f"📊 20日均线: HK${ma20:.0f} | 30日低点: HK${low_30d:.0f}")
     
     # 检查警报
-    alerts = check_alerts(price)
+    alerts = check_alerts(price, ma20, low_30d)
     
     # 获取上次警报
     last_time, last_type = load_last_alert()

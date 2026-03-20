@@ -253,43 +253,42 @@ def score_geopolitical(geo_events: list) -> dict:
     
     无事件: 50分 (基准)
     有事件: 事件最高分 (不叠加，避免重复计算)
-    
-    高权重事件:
-    - 中东战争/以色列-伊朗: +50
-    - 俄乌战争升级/北约直接介入: +50
-    - 台海军事冲突: +50
-    - 中国攻台/美国介入: +50 (最高)
-    
-    中权重事件:
-    - 美中贸易战升级/新关税: +30
-    - 朝鲜半岛冲突: +30
-    - 伊朗核危机: +30
-    - 欧洲能源危机: +25
-    
-    低权重事件:
-    - 俄罗斯被制裁: +15
-    - 其他地区冲突: +15
-    - 英国退欧余波: +10
     """
     if not geo_events:
         return {"score": 50, "details": ["无重大地缘政治事件(+50)"]}
     
+    # 中英文关键词映射 (越高分越严重)
     events_score = {
-        # 最高权重
-        "中东战争": 50, "以色列伊朗": 50, "以伊冲突": 50, "伊朗以色列": 50,
-        "台海": 50, "中国攻台": 50, "台湾战争": 50, "中国台湾": 50,
-        "俄乌升级": 50, "北约介入": 50, "俄罗斯北约": 50,
+        # 最高权重 (100分)
+        "iran war": 100, "iran attack": 100, "israel iran war": 100,
+        "iran israel war": 100, "middle east war": 100, "oil embargo": 100,
+        "taiwan war": 100, "china attack": 100, "wwiii": 100,
+        "world war": 100, "nuclear war": 100,
+        "中东战争": 100, "伊朗战争": 100, "台海战争": 100,
+        "中国攻台": 100, "核战争": 100, "世界大战": 100,
         
-        # 中权重
-        "贸易战": 30, "关税": 30, "美中": 30, "中美": 30,
-        "朝鲜": 30, "朝鲜半岛": 30, "朝鲜导弹": 30,
-        "伊朗核": 30, "伊朗制裁": 25,
-        "欧洲能源": 25, "俄罗斯断气": 25,
+        # 高权重 (75分)
+        "iran": 75, "israeli strike": 75, "iran strike": 75,
+        "military strike": 75, "missile attack": 75,
+        "caspian sea": 75, "iran war funding": 75,
+        "中东冲突": 75, "以色列袭击": 75, "伊朗袭击": 75,
+        "军事打击": 75, "导弹攻击": 75,
         
-        # 低权重
-        "俄罗斯制裁": 15, "俄罗斯": 10,
-        "英国退欧": 10, "英国": 5,
-        "欧盟": 5, "德国": 5, "法国": 5,
+        # 中高权重 (50分)
+        "ukraine": 50, "russia nato": 50, "nato troops": 50,
+        "trade war": 50, "tariff": 50, "sanction": 50,
+        "recession": 50, "energy crisis": 50, "oil crisis": 50,
+        "俄乌战争": 50, "北约东扩": 50, "贸易战": 50,
+        "关税": 50, "经济衰退": 50, "能源危机": 50,
+        
+        # 中权重 (30分)
+        "north korea": 30, "nuclear test": 30, "missile test": 30,
+        "korean peninsula": 30, "cyber attack": 30,
+        "朝鲜": 30, "核试验": 30, "导弹试射": 30,
+        
+        # 低权重 (15分)
+        "russia sanction": 15, "brexit": 15, "eu crisis": 15,
+        "俄罗斯制裁": 15, "英国退欧": 15, "欧盟危机": 15,
     }
     
     max_score = 50
@@ -301,16 +300,17 @@ def score_geopolitical(geo_events: list) -> dict:
             if keywords.upper() in event_upper:
                 if score > max_score:
                     max_score = score
-                matched_events.append(f"{event}(+{score})")
+                matched_events.append(f"{event[:50]}(+{score})")
                 break
     
     if matched_events:
+        final_score = min(100, 50 + max_score)
         return {
-            "score": min(100, 50 + max_score),
+            "score": final_score,
             "details": matched_events
         }
     
-    return {"score": 50, "details": ["地缘政治事件未识别(+50)"]}
+    return {"score": 50, "details": ["无识别关键词(+50)"]}
 
 
 def score_vix(vix: float) -> dict:
@@ -704,24 +704,51 @@ def get_market_data() -> dict:
 
 def fetch_geopolitical_news() -> list:
     """
-    获取地缘政治新闻
-    目前返回预设关键词，后续接入News API
+    获取地缘政治相关新闻
+    使用 Finnhub News API
     """
-    # TODO: 接入 Finnhub News API 或 Bing News API
-    # Finnhub token: d6tf93hr01qhkb43v280d6tf93hr01qhkb43v28g
+    import requests
     
-    # 预设关键词（根据当前世界局势）
-    known_events = [
-        "俄乌战争", "俄罗斯乌克兰", "北约东扩",
-        "中东战争", "以色列加沙", "伊朗以色列",
-        "美中贸易战", "中美关税", "科技战",
-        "台海局势", "台湾", "解放军",
-        "朝鲜导弹", "朝鲜核试验",
+    token = "d6tf93hr01qhkb43v280d6tf93hr01qhkb43v28g"
+    events = []
+    
+    # 地缘政治关键词
+    geo_keywords = [
+        # 战争/冲突
+        "war", "conflict", "military", "attack", "invasion", "troop",
+        "ukraine", "russia", "nato", "middle east", "israel", "iran", 
+        "gaza", "hamas", "hezbollah", "taiwan", "china", "us china",
+        # 制裁/贸易
+        "sanction", "tariff", "trade war", "embargo",
+        # 核/导弹
+        "nuclear", "missile", " ICBM", "ballistic",
+        # 经济危机
+        "recession", "crisis", "default", "bankruptcy",
     ]
     
-    # 这里后续接入API自动抓取
-    # 暂时返回空列表，人工判断
-    return []
+    categories = ['general', 'forex', 'market']
+    
+    for cat in categories:
+        try:
+            url = f"https://finnhub.io/api/v1/news?category={cat}&token={token}"
+            r = requests.get(url, timeout=10)
+            if r.status_code == 200:
+                news = r.json()
+                for article in news[:30]:  # 最多处理30条
+                    headline = article.get("headline", "").lower()
+                    summary = article.get("summary", "").lower()
+                    text = headline + " " + summary
+                    
+                    for keyword in geo_keywords:
+                        if keyword.lower() in text:
+                            events.append(article.get("headline", ""))
+                            break
+        except Exception as e:
+            pass
+    
+    # 去重
+    events = list(set(events))[:10]  # 最多10条
+    return events
 
 
 # ==================== 主程序 ====================

@@ -64,6 +64,15 @@ long_term:
   max_positions: 15
   position_size: 0.10   # 10%仓位
 
+# 波段策略
+swing:
+  enabled: true
+  max_positions: 10
+  position_size: 0.15   # 15%仓位
+  holding_days: [2, 5]   # 持仓2-5天
+  rsi_oversold: 35
+  rsi_overbought: 65
+
 # 日内策略
 intraday:
   enabled: true
