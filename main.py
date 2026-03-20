@@ -66,15 +66,15 @@ class QuantTradingSystem:
         self.data_fetcher = DataFetcher(self.api_config)
         
         # ========== Strategies ==========
-        if self.config.get("strategy_long_term", {}).get("enabled"):
+        if self.config.get("long_term", {}).get("enabled"):
             self.long_term_strategy = LongTermStrategy(self.config)
             logger.info("长期策略已加载")
         
-        if self.config.get("strategy_swing", {}).get("enabled"):
+        if self.config.get("swing", {}).get("enabled"):
             self.swing_strategy = SwingStrategy(self.config)
             logger.info("波段策略已加载")
         
-        if self.config.get("strategy_intraday", {}).get("enabled"):
+        if self.config.get("intraday", {}).get("enabled"):
             self.intraday_strategy = IntradayStrategy(self.config)
             logger.info("日内策略已加载")
         

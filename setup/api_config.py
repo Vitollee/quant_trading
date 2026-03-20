@@ -56,9 +56,25 @@ class APIConfig:
     
     def is_configured(self) -> bool:
         """检查是否已配置"""
+        # 检查 api_config.json
         finnhub = bool(self.config.get("finnhub", {}).get("api_key"))
         futu = bool(self.config.get("futu", {}).get("account"))
-        return finnhub or futu
+        
+        if finnhub or futu:
+            return True
+        
+        # 也检查 config_v2.yaml 是否有 finnhub
+        try:
+            import yaml
+            if os.path.exists("config/config_v2.yaml"):
+                with open("config/config_v2.yaml", "r") as f:
+                    v2_config = yaml.safe_load(f)
+                    if v2_config.get("quotes", {}).get("finnhub", {}).get("api_key"):
+                        return True
+        except:
+            pass
+        
+        return False
     
     def get_futu_config(self) -> Dict:
         """获取富途配置"""
@@ -66,7 +82,20 @@ class APIConfig:
     
     def get_finnhub_key(self) -> str:
         """获取Finnhub API Key"""
-        return self.config.get("finnhub", {}).get("api_key", "")
+        key = self.config.get("finnhub", {}).get("api_key", "")
+        
+        # 如果api_config.json没有，检查config_v2.yaml
+        if not key:
+            try:
+                import yaml
+                if os.path.exists("config/config_v2.yaml"):
+                    with open("config/config_v2.yaml", "r") as f:
+                        v2_config = yaml.safe_load(f)
+                        key = v2_config.get("quotes", {}).get("finnhub", {}).get("api_key", "")
+            except:
+                pass
+        
+        return key
     
     def get_alpha_vantage_key(self) -> str:
         """获取Alpha Vantage API Key"""
