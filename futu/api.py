@@ -11,7 +11,8 @@
 作者: 虾虾 🦐
 """
 
-from futu import *
+from futu import OpenQuoteContext, OpenTradeContext, OrderType, TrdSide
+from futu.common.constant import KLType
 from typing import Dict, List, Optional
 import logging
 
@@ -125,24 +126,21 @@ class FutuAPI:
         try:
             # 转换K线类型
             kt_map = {
-                "DAY": KL_TYPE.KL_DAY,
-                "WEEK": KL_TYPE.KL_WEEK,
-                "MONTH": KL_TYPE.KL_MONTH,
-                "1M": KL_TYPE.KL_1M,
-                "5M": KL_TYPE.KL_5M,
-                "15M": KL_TYPE.KL_15M,
-                "30M": KL_TYPE.KL_30M,
-                "60M": KL_TYPE.KL_60M,
-                "1H": KL_TYPE.KL_1H,
-                "2H": KL_TYPE.KL_2H,
-                "4H": KL_TYPE.KL_4H,
+                "DAY": KLType.K_DAY,
+                "WEEK": KLType.K_WEEK,
+                "MONTH": KLType.K_MON,
+                "1M": KLType.K_1M,
+                "5M": KLType.K_5M,
+                "15M": KLType.K_15M,
+                "30M": KLType.K_30M,
+                "60M": KLType.K_60M,
             }
-            kl_type = kt_map.get(ktype, KL_TYPE.KL_DAY)
+            kl_type = kt_map.get(ktype, KLType.K_DAY)
             
-            ret, data = self.quote_ctx.get_history_kline(
-                symbol, start, end, kl_type, ""
+            ret, data, page_key = self.quote_ctx.request_history_kline(
+                symbol, start=start, end=end, ktype=kl_type
             )
-            if ret == 0 and not data.empty:
+            if ret == 0 and data is not None and not data.empty:
                 return data.to_dict('records')
             return []
         except Exception as e:
@@ -157,13 +155,13 @@ class FutuAPI:
             
         try:
             kt_map = {
-                "DAY": KL_TYPE.KL_DAY,
-                "5M": KL_TYPE.KL_5M,
-                "15M": KL_TYPE.KL_15M,
-                "30M": KL_TYPE.KL_30M,
-                "60M": KL_TYPE.KL_60M,
+                "DAY": KLType.K_DAY,
+                "5M": KLType.K_5M,
+                "15M": KLType.K_15M,
+                "30M": KLType.K_30M,
+                "60M": KLType.K_60M,
             }
-            kl_type = kt_map.get(ktype, KL_TYPE.KL_DAY)
+            kl_type = kt_map.get(ktype, KLType.K_DAY)
             
             ret, data = self.quote_ctx.get_realtime_kline(
                 symbol, count, kl_type

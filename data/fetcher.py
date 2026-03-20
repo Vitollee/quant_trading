@@ -8,10 +8,12 @@
 """
 
 try:
-    from futu import *
+    from futu import OpenQuoteContext
+    from futu.common.constant import KLType
     FUTU_AVAILABLE = True
 except ImportError:
     FUTU_AVAILABLE = False
+    KLType = None
 
 import yfinance as yf
 import pandas as pd
@@ -83,16 +85,16 @@ class DataFetcher:
     def get_history_futu(self, symbol: str, market: str = "HK", 
                        start: str = "", end: str = "", days: int = 30) -> pd.DataFrame:
         """获取富途K线"""
-        if not self.use_futu or not self.quote_ctx:
+        if not self.use_futu or not self.quote_ctx or KLType is None:
             return pd.DataFrame()
             
         try:
             code = f"{market.upper()}.{symbol}"
-            ret, data = self.quote_ctx.get_history_kline(
-                code, start or "2020-01-01", end or "2026-12-31", 
-                KL_TYPE.KL_DAY, ""
+            ret, data, page_key = self.quote_ctx.request_history_kline(
+                code, start=start or "2020-01-01", end=end or "2026-12-31", 
+                ktype=KLType.K_DAY
             )
-            if ret == 0 and not data.empty:
+            if ret == 0 and data is not None and not data.empty:
                 return data
         except Exception as e:
             logger.error(f"富途获取K线失败: {e}")
@@ -231,6 +233,59 @@ class DataFetcher:
         except Exception as e:
             logger.error(f"Yahoo K线失败: {e}")
             return pd.DataFrame()
+
+    def get_financials(self, symbol: str, market: str = "hk") -> Optional[dict]:
+        """
+        获取财务数据 (Yahoo Finance)
+        
+        Args:
+            symbol: 股票代码
+            market: 市场类型 (hk/us)
+            
+        Returns:
+            dict: 财务指标数据
+        """
+        try:
+            ticker = symbol
+            if market.lower() == "hk":
+                if not symbol.endswith(".HK"):
+                    ticker = f"{int(symbol):04d}.HK"
+            
+            stock = yf.Ticker(ticker)
+            info = stock.info
+            
+            # 提取关键财务指标
+            financials = {
+                "pe_ratio": info.get("trailingPE", info.get("forwardPE", 0)),
+                "forward_pe": info.get("forwardPE", 0),
+                "pb_ratio": info.get("priceToBook", 0),
+                "ps_ratio": info.get("priceToSalesTrailing12Months", 0),
+                "roe": info.get("returnOnEquity", 0),
+                "roa": info.get("returnOnAssets", 0),
+                "gross_margin": info.get("grossMargins", 0),
+                "operating_margin": info.get("operatingMargins", 0),
+                "net_margin": info.get("profitMargins", 0),
+                "revenue": info.get("totalRevenue", 0),
+                "revenue_growth": info.get("revenueGrowth", 0),
+                "earnings_growth": info.get("earningsGrowth", 0),
+                "eps": info.get("trailingEps", info.get("forwardEps", 0)),
+                "eps_growth": info.get("epsGrowth", 0),
+                "book_value": info.get("bookValue", 0),
+                "total_cash": info.get("totalCash", 0),
+                "debt_to_equity": info.get("debtToEquity", 0),
+                "current_ratio": info.get("currentRatio", 0),
+                "quick_ratio": info.get("quickRatio", 0),
+                "dividend_yield": info.get("dividendYield", 0),
+                "market_cap": info.get("marketCap", 0),
+                "enterprise_value": info.get("enterpriseValue", 0),
+                "source": "Yahoo"
+            }
+            
+            return financials
+            
+        except Exception as e:
+            logger.error(f"获取财务数据失败 {symbol}: {e}")
+            return None
 
     def get_forex(self, from_curr: str = "USD", to_curr: str = "HKD") -> Optional[dict]:
         """获取汇率"""

@@ -10,10 +10,12 @@
 """
 
 try:
-    from futu import *
+    from futu import OpenQuoteContext, OpenTradeContext
+    from futu.common.constant import KLType
     FUTU_AVAILABLE = True
 except ImportError:
     FUTU_AVAILABLE = False
+    KLType = None
     print("Warning: futu-api not installed. Run: pip install futu-api")
 
 from typing import Dict, List, Optional
@@ -114,14 +116,26 @@ class FutuTrader:
             market: 市场
             ktype: K线类型 DAY/WEEK/MONTH
         """
-        if not self.quote_ctx:
+        if not self.quote_ctx or KLType is None:
             return []
             
         try:
-            ret, data = self.quote_ctx.get_history_kline(
-                symbol, start, end, ktype, ""
+            kt_map = {
+                "DAY": KLType.K_DAY,
+                "WEEK": KLType.K_WEEK,
+                "MONTH": KLType.K_MON,
+                "1M": KLType.K_1M,
+                "5M": KLType.K_5M,
+                "15M": KLType.K_15M,
+                "30M": KLType.K_30M,
+                "60M": KLType.K_60M,
+            }
+            kl_type = kt_map.get(ktype, KLType.K_DAY)
+            
+            ret, data, page_key = self.quote_ctx.request_history_kline(
+                symbol, start=start, end=end, ktype=kl_type
             )
-            if ret == 0:
+            if ret == 0 and data is not None:
                 return data.to_dict('records')
             return []
         except Exception as e:
