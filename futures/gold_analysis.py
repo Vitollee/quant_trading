@@ -140,11 +140,20 @@ def score_technical(price: float, ma20: float, ma50: float,
 
 # ==================== 2. 原油/通胀评分 ====================
 
-def score_oil(oil_price: float) -> dict:
+def score_oil(oil_price: float, oil_change: float = 0, 
+              gold_change: float = 0) -> dict:
     """
-    原油评分 (0-100)
+    原油评分 (0-100) + 金油相关性分析
     
-    逻辑: 原油涨 → 通胀预期涨 → 黄金受益
+    逻辑: 
+    - 原油涨 → 通胀预期涨 → 黄金受益
+    - 金油同向变动 → 趋势确认 → 权重加强
+    - 金油背离 → 可能是反转信号 → 权重降低
+    
+    Args:
+        oil_price: 原油价格
+        oil_change: 原油30日变化率
+        gold_change: 黄金30日变化率
     
     评分规则:
     - >110: 100分 (恶性通胀)
@@ -154,33 +163,77 @@ def score_oil(oil_price: float) -> dict:
     - 50-70: 50分 (中性)
     - 30-50: 35分 (低通胀/通缩风险)
     - <30: 20分 (通缩)
+    
+    相关性调整:
+    - 同向且同幅度: ×1.2 (加强)
+    - 同向但幅度差异大: ×1.0 (不变)
+    - 背离: ×0.7 (减弱)
     """
     if oil_price is None:
-        return {"score": 50, "details": ["原油数据获取失败(+50)"]}
+        return {"score": 50, "details": ["原油数据获取失败(+50)"], "correlation": "unknown"}
     
+    # 基础评分
     if oil_price > 110:
-        score = 100
-        details = [f"原油${oil_price:.0f}>110 恶性通胀预期(+100)"]
+        base_score = 100
+        base_details = [f"原油${oil_price:.0f}>110 恶性通胀预期(+100)"]
     elif oil_price > 100:
-        score = 90
-        details = [f"原油${oil_price:.0f}>100 高通胀(+90)"]
+        base_score = 90
+        base_details = [f"原油${oil_price:.0f}>100 高通胀(+90)"]
     elif oil_price > 80:
-        score = 75
-        details = [f"原油${oil_price:.0f}>80 通胀压力(+75)"]
+        base_score = 75
+        base_details = [f"原油${oil_price:.0f}>80 通胀压力(+75)"]
     elif oil_price > 70:
-        score = 60
-        details = [f"原油${oil_price:.0f}>70 中高油价(+60)"]
+        base_score = 60
+        base_details = [f"原油${oil_price:.0f}>70 中高油价(+60)"]
     elif oil_price > 50:
-        score = 50
-        details = [f"原油${oil_price:.0f} 中性区间(+50)"]
+        base_score = 50
+        base_details = [f"原油${oil_price:.0f} 中性区间(+50)"]
     elif oil_price > 30:
-        score = 35
-        details = [f"原油${oil_price:.0f}<50 低通胀/通缩风险(+35)"]
+        base_score = 35
+        base_details = [f"原油${oil_price:.0f}<50 低通胀/通缩风险(+35)"]
     else:
-        score = 20
-        details = [f"原油${oil_price:.0f}<30 通缩风险(+20)"]
+        base_score = 20
+        base_details = [f"原油${oil_price:.0f}<30 通缩风险(+20)"]
     
-    return {"score": score, "details": details}
+    details = base_details
+    
+    # 相关性分析
+    correlation = "neutral"
+    correlation_bonus = 1.0
+    
+    if oil_change != 0 and gold_change != 0:
+        # 判断方向是否一致
+        same_direction = (oil_change > 0) == (gold_change > 0)
+        
+        # 判断幅度是否接近 (差异小于50%)
+        ratio = min(abs(oil_change), abs(gold_change)) / max(abs(oil_change), abs(gold_change)) if max(abs(oil_change), abs(gold_change)) > 0 else 0
+        similar_magnitude = ratio > 0.5
+        
+        if same_direction and similar_magnitude:
+            # 同向且幅度接近 → 确认趋势，加强
+            correlation = "confirmed"
+            correlation_bonus = 1.2
+            details.append(f"金油同向({oil_change:+.0f}%/{gold_change:+.0f}%) 趋势确认(+20%)")
+        elif same_direction:
+            # 同向但幅度差异大 → 正常
+            correlation = "same_direction"
+            correlation_bonus = 1.0
+            details.append(f"金油同向({oil_change:+.0f}%/{gold_change:+.0f}%) 无背离")
+        else:
+            # 背离 → 可能是反转信号，减弱
+            correlation = "diverged"
+            correlation_bonus = 0.7
+            details.append(f"⚠️ 金油背离({oil_change:+.0f}%/{gold_change:+.0f}%) 反转风险(-30%)")
+    
+    final_score = min(100, base_score * correlation_bonus)
+    
+    return {
+        "score": final_score, 
+        "details": details, 
+        "correlation": correlation,
+        "oil_change": oil_change,
+        "gold_change": gold_change
+    }
 
 
 # ==================== 3. 避险情绪评分 ====================
@@ -613,15 +666,26 @@ def get_market_data() -> dict:
             loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
             rs = gain / loss
             data["rsi"] = (100 - (100 / (1 + rs))).iloc[-1]
+            
+            # 黄金30日变化率
+            if len(close) >= 30:
+                data["gold_change_30d"] = (close.iloc[-1] / close.iloc[-30] - 1) * 100
+            else:
+                data["gold_change_30d"] = 0
     except:
         pass
     
-    # 原油
+    # 原油 + 30日变化
     try:
         oil = yf.Ticker("BZ=F")
-        hist = oil.history(period="1d")
+        hist = oil.history(period="3mo")
         if not hist.empty:
             data["oil_price"] = hist['Close'].iloc[-1]
+            # 原油30日变化率
+            if len(hist) >= 30:
+                data["oil_change_30d"] = (hist['Close'].iloc[-1] / hist['Close'].iloc[-30] - 1) * 100
+            else:
+                data["oil_change_30d"] = 0
     except:
         pass
     
@@ -819,7 +883,11 @@ def run_analysis(geo_events: list = None):
         high_30d=data.get("high_30d", 0)
     )
     
-    oil = score_oil(data.get("oil_price"))
+    oil = score_oil(
+        data.get("oil_price"),
+        oil_change=data.get("oil_change_30d", 0),
+        gold_change=data.get("gold_change_30d", 0)
+    )
     risk = score_risk_sentiment(
         geo_events=geo_events,
         vix=data.get("vix"),
