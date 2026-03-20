@@ -202,7 +202,10 @@ class QuantTradingSystem:
 
     def save_state(self):
         """保存状态"""
-        self.trading_engine.save_state("/tmp/quant_trading_state.json")
+        import os
+        import tempfile
+        state_file = os.path.join(tempfile.gettempdir(), "quant_trading_state.json")
+        self.trading_engine.save_state(state_file)
         logger.info("状态已保存")
 
 

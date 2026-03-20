@@ -240,12 +240,23 @@ class DataFetcher:
                 return df
         
         # 备用 Yahoo
-        return self.get_history_yf(symbol, period or f"{days}d", interval)
+        return self.get_history_yf(symbol, market, period or f"{days}d", interval)
 
-    def get_history_yf(self, symbol: str, period: str = "1mo", interval: str = None) -> pd.DataFrame:
+    def get_history_yf(self, symbol: str, market: str = "hk", period: str = "1mo", interval: str = None) -> pd.DataFrame:
         """Yahoo K线"""
         try:
-            ticker = f"{int(symbol):04d}.HK" if symbol.isdigit() else symbol
+            # 转换 ticker 格式
+            if market.lower() == "hk":
+                if symbol.endswith(".HK"):
+                    ticker = symbol
+                elif symbol.isdigit():
+                    # Yahoo Finance 使用 4 位数字但不带前导 0
+                    ticker = f"{int(symbol)}.HK"
+                else:
+                    ticker = f"{symbol}.HK"
+            else:
+                ticker = symbol.upper()
+            
             stock = yf.Ticker(ticker)
             return stock.history(period=period, interval=interval)
         except Exception as e:
@@ -266,8 +277,14 @@ class DataFetcher:
         try:
             ticker = symbol
             if market.lower() == "hk":
-                if not symbol.endswith(".HK"):
+                if symbol.endswith(".HK"):
+                    ticker = symbol
+                elif symbol.isdigit():
                     ticker = f"{int(symbol):04d}.HK"
+                else:
+                    ticker = f"{symbol}.HK"
+            else:
+                ticker = symbol.upper()
             
             stock = yf.Ticker(ticker)
             info = stock.info
