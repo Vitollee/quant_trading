@@ -168,15 +168,33 @@ class DataFetcher:
         """获取港股报价 (Yahoo)"""
         try:
             ticker = symbol
-            if market == "hk" and not symbol.endswith(".HK"):
-                ticker = f"{int(symbol):04d}.HK"
+            
+            # 港股：转换为 Yahoo 格式
+            if market.lower() == "hk":
+                if symbol.endswith(".HK"):
+                    ticker = symbol
+                elif symbol.isdigit():
+                    ticker = f"{int(symbol):04d}.HK"
+                else:
+                    ticker = f"{symbol}.HK"
+            # 美股：Yahoo 直接用 symbol
+            elif market.lower() == "us":
+                ticker = symbol.upper()
+            else:
+                ticker = symbol
 
             stock = yf.Ticker(ticker)
             info = stock.info
+            
+            if not info or not info.get("regularMarketPrice"):
+                # 尝试备用格式
+                if market.lower() == "hk" and not symbol.endswith(".HK"):
+                    stock = yf.Ticker(f"{symbol}.HK")
+                    info = stock.info
 
             return {
                 "symbol": symbol,
-                "price": info.get("currentPrice", info.get("previousClose", 0)),
+                "price": info.get("regularMarketPrice", info.get("currentPrice", info.get("previousClose", 0))),
                 "change": info.get("regularMarketChange", 0),
                 "change_pct": info.get("regularMarketChangePercent", 0),
                 "volume": info.get("volume", 0),

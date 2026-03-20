@@ -43,7 +43,8 @@ class QuantTradingSystem:
         logger.info("=" * 50)
 
         # 初始化各模块
-        self.data_fetcher = DataFetcher()
+        finnhub_key = self.config.get("quotes", {}).get("finnhub", {}).get("api_key", "")
+        self.data_fetcher = DataFetcher(finnhub_key=finnhub_key)
         self.news_fetcher = NewsFetcher()
 
         # 长周期策略
