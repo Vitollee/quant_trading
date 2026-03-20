@@ -1,9 +1,5 @@
 # 量化交易系统 V2 | Quantitative Trading System V2
 
-[English Below](#english-section)
-
----
-
 基于 Vnstock 和 Screeni-py 设计思路改进 | Built on Vnstock and Screeni-py concepts
 
 ## 功能特点 | Features
@@ -60,7 +56,7 @@ print(result)
 ## 运行脚本 | Run Scripts
 
 ```bash
-cd /home/vito/Desktop/quant_trading
+cd /.../quant_trading
 pip install yfinance pandas numpy
 
 # 运行测试 | Run Test
